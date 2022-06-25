@@ -126,6 +126,7 @@ export default {
       url_of_identity_process_result:"",//后端处理后图片地址
       url_of_changebg_process_result:"",
       filename_of_pic_in_back:"",//后台存储文件名
+      result_of_process:false,
       timer:null
     }
   },watch:{
@@ -173,7 +174,8 @@ export default {
         this.timer = setInterval(() => {
             setTimeout(()=>{
               // 这里ajax 请求的代码片段和判断是否停止定时器
-              if(this.load_result_pic(this.filename_of_pic_in_back)){
+              this.load_result_pic(this.filename_of_pic_in_back)
+              if(this.result_of_process){
                 this.destroyTimer()
               }
               // 如需要停止定时器，只需加入以下：
@@ -188,13 +190,13 @@ export default {
             }
           }
       ).then(res=> { //请求成功
-        if(res.status='wait'){
-          return false
+        if(res.data.status ==='wait'){
+          this.result_of_process = false
         }else {
           console.log(res)
           this.url_of_identity_process_result = res.data
           console.log(this.url_of_identity_process_result)
-          return true
+          this.result_of_process = true
         }
           })
       },

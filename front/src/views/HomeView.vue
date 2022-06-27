@@ -21,13 +21,7 @@
       </div><div class="d2">
     </div>
   </div>
-  <!--中间三个控件-->
-  <div class="middle">
-    <div ><button class="b2" @click="process_identification"></button></div>
-    <div><button class="b3" @click="process_person"></button></div>
-    <div><button class="b4" @click="process_change_background"></button></div>
-    <div><button class="b5" @click="process_change_style"></button></div>
-  </div>
+
 <!--  人物抠取模块-->
   <div v-if="model=='person_photo'" class="person">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
@@ -55,6 +49,9 @@
       </div>
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
+    <div class="zj1"></div>
+    <div class="zj2"></div>
+    <div class="zj3"></div>
   </div>
 <!--  换背景模块-->
   <div v-if="model=='changed_background_photo'" class="changebg_part">
@@ -82,15 +79,22 @@
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
     </div>
-    <div class="bg1"></div>
-    <div class="bg2"></div>
-    <div class="bg3"></div>
-    <div class="bg4"></div>
+    <div class="st1"></div>
+    <div class="st2"></div>
+<!--    <div class="bg3"></div>-->
+<!--    <div class="bg4"></div>-->
+  </div>
+  <!--中间4个控件-->
+  <div class="middle">
+    <div ><button class="b2" @click="process_identification"></button></div>
+    <div><button class="b3" @click="process_person"></button></div>
+    <div><button class="b4" @click="process_change_background"></button></div>
+    <div><button class="b5" @click="process_change_style"></button></div>
   </div>
   <!--下面部分-->
   <div class="down">
     <div style="width:800px;height:1px;margin:70px auto;
-    padding:0px;background-color:#D5D5D5;overflow:hidden;">
+    padding:0px;background-color:#D5D5D5;overflow:hidden;z-index:-1;">
     </div>
   </div>
 
@@ -237,8 +241,8 @@ export default {
       this.model='changed_style_photo'
     },
     process_person(){
-      // this.model='person_photo';
-      this.model='identity_photo';
+      this.model='person_photo';
+      //this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
@@ -298,11 +302,11 @@ export default {
 /*导航栏*/
 .daohang{
   margin-top: -8px;
-  width: 100%;
+  width: 77.5%;
   height: 50px;
   z-index:999;
   background-color: aliceblue;
-  margin-left: -10px;
+  margin-left: 10%;
   border-left: 30px solid;
   border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);
   border-image-slice: 1;
@@ -420,6 +424,7 @@ export default {
   background-image: url('../assets/14.png');
   background-size: 100% 100%;
   margin-left: 10%;
+  z-index: 999;
 }
 
 .changebg_part{
@@ -549,7 +554,7 @@ export default {
   font-size: 30px;
   color: white;
   border-radius: 5px;
-  background-color: #8aff84;
+  background-color: #0099FF;
   padding: 8px;
   border: none;
   outline: none;
@@ -787,7 +792,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 6%;
-  margin-top: 450px;
+  margin-top: 400px;
   z-index:999;
   background-image: url('../assets/15.png');
 }
@@ -797,7 +802,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 45%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/17.png');
 }
@@ -807,7 +812,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 65%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/16.png');
 }
@@ -850,5 +855,55 @@ export default {
   margin-top: 730px;
   z-index:999;
   background-image: url('../assets/21.png');
+}
+.st1{
+  width: 300px;
+  height: 240px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 21%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/23.jpg');
+}
+.st2{
+  width: 300px;
+  height: 240px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 53%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/24.jpg');
+}
+.zj1{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 20%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/25.png');
+}
+.zj2{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 42%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/26.jpg');
+}
+.zj3{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 65%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/27.png');
 }
 </style>

@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: "Header"
+  name: "change_bg_process"
 }
 </script>
 

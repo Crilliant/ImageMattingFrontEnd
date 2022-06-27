@@ -9,12 +9,12 @@
     <div class="in1">
       <form enctype="multipart/form-data" method="post">
         <p type="primary" class="main-submit" v-if="location_of_uploaded_img==''">提交图片</p>
-        <input ref="relFile" name="file" class="main-upload" type="file" @change="loadpic" >
+        <input ref="relFile" name="file" class="main-upload" type="file" @change="load_local_pic" >
         <div class="imgBox">
           <img id="original_pic" :src="location_of_uploaded_img" value='custom'/>
         </div>
       </form>
-      <button @click="loadpic_button" class="upload_btn">点击上传图片</button>
+      <button @click="load_pic_button" class="upload_btn">点击上传图片</button>
 <!--      装饰模块-->
       </div><div class="d1">
       </div><div class="d3">
@@ -111,12 +111,8 @@
 </template>
 
 <script>
-// @ is an alias to /src
-//先把图片上传显示出来
-//加一个a标签，获取图片的流，点download下载就好了
 import request from "@/utils/request";
-import axios from "axios";
-import request_of_jason from "@/utils/request";
+import request_of_jason from "@/utils/request_of_jason";
 
 export default {
   name: 'HomeView',
@@ -129,13 +125,14 @@ export default {
       url_of_identity_process_result:"",//后端处理后图片地址
       url_of_changebg_process_result:"",
       filename_of_pic_in_back:"",//后台存储文件名
-      result_of_process:false,
+      result_of_process:false,//值改变为TRUE是表示已经处理好停止轮询请求结果的url
       timer:null
     }
   },watch:{
-  },methods:{
+  },
+  methods:{
     // 加载图片并预览
-    loadpic(e){
+    load_local_pic(e){
       const reader = new FileReader()
       reader.readAsDataURL(e.target.files[0])
       reader.onload = () => {
@@ -154,7 +151,30 @@ export default {
       }
       return new File([u8arr],filename,{type:contentType})
     },
-    //将图片文件传递给后端
+    // 设置计时器获取处理结果文件的url
+    set_Timer(){
+      this.timer = setInterval(() => {
+        setTimeout(()=>{
+          // 这里ajax 请求的代码片段和判断是否停止定时器
+          this.load_result_pic(this.filename_of_pic_in_back);
+          if(this.result_of_process){
+            this.destroyTimer()
+          }
+          // 如需要停止定时器，只需加入以下：
+        }, 0)
+      }, 5000)
+    },
+    // 获取后端处理后生成的url
+    load_result_pic(filename){
+      request_of_jason.post('/api/image/download',{filename:filename}).then(res=> { //请求成功
+        if(res.status ==='wait'){
+          this.result_of_process = false
+        }else {
+          this.url_of_identity_process_result = res.url
+          this.result_of_process = true
+        }
+      })
+    },
     // 根据后端传回的url下载文件到本地
     download_Result() {
       fetch(this.url_of_identity_process_result).then(res=>res.blob()).then(res=>{
@@ -164,72 +184,11 @@ export default {
         bqa.click();
       })
     },
+    // 删除计时器
     destroyTimer(){
       clearInterval(this.timer);
       this.timer=null;
     },
-    //设置定时器，每隔一段时间发送请求
-    // 根据url显示处理后的图片文件
-    set_identification_Timer(){
-        this.timer = setInterval(() => {
-            setTimeout(()=>{
-              // 这里ajax 请求的代码片段和判断是否停止定时器
-              this.load_identification_result_pic(this.filename_of_pic_in_back);
-              if(this.result_of_process){
-                this.destroyTimer()
-              }
-              // 如需要停止定时器，只需加入以下：
-            }, 0)
-        }, 5000)
-    },
-    set_segmentation_Timer(){
-      this.timer = setInterval(() => {
-        setTimeout(()=>{
-          // 这里ajax 请求的代码片段和判断是否停止定时器
-          this.load_segmentation_result_pic(this.filename_of_pic_in_back);
-          if(this.result_of_process){
-            this.destroyTimer()
-          }
-          // 如需要停止定时器，只需加入以下：
-        }, 0)
-      }, 5000)
-    },
-    load_segmentation_result_pic(filename){
-      axios.post(' http://10.133.154.165:5000/api/image/download',
-          {  //body参数
-            filename:filename}, {headers: {  //头部参数
-              'Content-Type': 'application/json',
-            }
-          }
-      ).then(res=> { //请求成功
-        if(res.data.status ==='wait'){
-          this.result_of_process = false
-        }else {
-          console.log(res)
-          this.url_of_identity_process_result = res.data
-          console.log(this.url_of_identity_process_result)
-          this.result_of_process = true
-        }
-      })
-    },
-    load_identification_result_pic(filename){
-      axios.post('http://10.133.154.165:5000/api/image/download',
-          {  //body参数
-            filename:filename}, {headers: {  //头部参数
-              'Content-Type': 'application/json',
-            }
-          }
-      ).then(res=> { //请求成功
-        if(res.data.status ==='wait'){
-          this.result_of_process = false
-        }else {
-          console.log(res)
-          this.url_of_identity_process_result = res.data
-          console.log(this.url_of_identity_process_result)
-          this.result_of_process = true
-        }
-          })
-      },
     process_change_background(){
       this.model='changed_background_photo'
     },
@@ -237,11 +196,12 @@ export default {
       this.model='changed_style_photo'
     },
     process_person(){
-      // this.model='person_photo';
-      this.model='identity_photo';
+       this.model='person_photo';
+      //this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
+      // 上传图片到后端
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           var r=confirm("照片处理中，请稍后");
@@ -252,7 +212,7 @@ export default {
           return
         };
       })
-      this.set_segmentation_Timer()
+      this.set_Timer()
     },
     process_identification(){
       this.model='identity_photo';
@@ -269,20 +229,22 @@ export default {
           return
         };
       })
-      this.set_identification_Timer()
+      this.set_Timer()
     },
-    loadpic_button() {
+    load_pic_button() {
       this.$refs.relFile.dispatchEvent(new MouseEvent('click'))
     },
     fileChange() {
       // 上传文件
     },
     return_to_main_page(){
+      confirm("确认离开吗？请注意照片是否保存")
       this.model='main';
       this.destroyTimer();
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
       this.url_of_identity_process_result='';
+      request_of_jason.post('/delete',{operation:this.filename_of_pic_in_back})
     }
   }
 }
@@ -414,6 +376,7 @@ export default {
 }
 /*扣人模块*/
 .person{
+  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
@@ -432,6 +395,7 @@ export default {
 }
 
 .identity_part{
+  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
@@ -560,6 +524,8 @@ export default {
 }
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
+  z-index: 999;
+  margin-top: 800px;
   position: absolute;
   width: 80%;
   height: 200px;
@@ -787,7 +753,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 6%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/15.png');
 }
@@ -797,7 +763,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 45%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/17.png');
 }
@@ -807,7 +773,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 65%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/16.png');
 }

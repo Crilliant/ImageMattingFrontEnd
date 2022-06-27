@@ -244,10 +244,10 @@ export default {
     return_to_main_page(){
       this.model='main';
       this.destroyTimer();
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
       this.url_of_identity_process_result='';
-      request_of_jason.post('/delete',{operation:this.filename_of_pic_in_back})
     }
   }
 }

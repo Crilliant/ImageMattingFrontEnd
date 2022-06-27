@@ -20,7 +20,7 @@ request_of_jason.interceptors.response.use(
         if (response.config.responseType === 'blob') {
             return res
         }
-        // 兼容服务端返回的字符串数据
+        //兼容服务端返回的字符串数据
         if (typeof res === 'string') {
             res = res ? JSON.parse(res) : res
         }
@@ -32,5 +32,4 @@ request_of_jason.interceptors.response.use(
         return Promise.reject(error)
     }
 )
-
 export default request_of_jason

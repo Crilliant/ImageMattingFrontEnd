@@ -1,8 +1,8 @@
 <template>
 <!--  导航栏-->
   <div class="daohang">
-    <div class="mm">
-    </div>
+    <div class="logo"></div>
+    <p>欢迎使用猫之使徒在线抠图！</p>
   </div>
   <!--上面部分-->
   <div class="up" v-if="model=='main'">
@@ -14,7 +14,7 @@
           <img id="original_pic" :src="location_of_uploaded_img" value='custom'/>
         </div>
       </form>
-      <button @click="loadpic_button" class="b1">点击上传图片</button>
+      <button @click="loadpic_button" class="upload_btn">点击上传图片</button>
 <!--      装饰模块-->
       </div><div class="d1">
       </div><div class="d3">
@@ -30,14 +30,14 @@
   </div>
 <!--  人物抠取模块-->
   <div v-if="model=='person_photo'" class="person">
-    <button class="backToHome" @click="model='main'">返回首页</button>
+    <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <!--      图片位置-->
       <div class="block-one">
       </div>
       <div class="block-two"></div>
       <div class="select-BGColor" v-cloak></div>
-      <button type="primary"  class="download1">一键下载</button>
+      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
 <!--      装饰模块-->
       <div class="pe1"></div>
       <div class="pe2"></div>
@@ -46,25 +46,27 @@
   </div>
 <!--  证件照模块-->
   <div v-if="model=='identity_photo'" class="identity_part">
-    <button class="backToHome" @click="model='main';this.destroyTimer()">返回首页</button>
+    <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <!--      图片位置-->
       <div class="block-three">
-        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom' title="自定义背景"/>
+        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
+        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
       </div>
-      <button type="primary"  class="download2" @click="download_Result">一键下载</button>
+      <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
   </div>
 <!--  换背景模块-->
   <div v-if="model=='changed_background_photo'" class="changebg_part">
-    <button class="backToHome" @click="model='main';this.destroyTimer()">返回首页</button>
+    <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
-        <img id="changebg_result_img" value="custom" title="更换背景图" :src="url_of_changebg_process_result">
+        <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
+        <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
       </div>
       <div class="block-two"></div>
-      <button type="primary"  class="download2">一键下载</button>
-      <button type="primary"  class="download3">添加背景</button>
+      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
+      <button type="primary"  class="change_style_btn">添加背景</button>
     </div>
     <div class="bg1"></div>
     <div class="bg2"></div>
@@ -73,12 +75,12 @@
   </div>
   <!--  换风格模块-->
   <div v-if="model=='changed_style_photo'" class="changebg_part">
-    <button class="backToHome" @click="model='main';this.destroyTimer()">返回首页</button>
+    <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one"></div>
       <div class="block-two"></div>
-      <button type="primary"  class="download2">一键下载</button>
-      <button type="primary"  class="download3">添加背景</button>
+      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
+      <button type="primary"  class="change_style_btn">添加背景</button>
     </div>
     <div class="bg1"></div>
     <div class="bg2"></div>
@@ -114,6 +116,7 @@
 //加一个a标签，获取图片的流，点download下载就好了
 import request from "@/utils/request";
 import axios from "axios";
+import request_of_jason from "@/utils/request";
 
 export default {
   name: 'HomeView',
@@ -152,9 +155,6 @@ export default {
       return new File([u8arr],filename,{type:contentType})
     },
     //将图片文件传递给后端
-    process_person(){
-      this.model='person_photo';
-    },
     // 根据后端传回的url下载文件到本地
     download_Result() {
       fetch(this.url_of_identity_process_result).then(res=>res.blob()).then(res=>{
@@ -170,11 +170,11 @@ export default {
     },
     //设置定时器，每隔一段时间发送请求
     // 根据url显示处理后的图片文件
-    setTimer(){
+    set_identification_Timer(){
         this.timer = setInterval(() => {
             setTimeout(()=>{
               // 这里ajax 请求的代码片段和判断是否停止定时器
-              this.load_result_pic(this.filename_of_pic_in_back)
+              this.load_identification_result_pic(this.filename_of_pic_in_back);
               if(this.result_of_process){
                 this.destroyTimer()
               }
@@ -182,8 +182,38 @@ export default {
             }, 0)
         }, 5000)
     },
-    load_result_pic(filename){
-      axios.post(' http://127.0.0.1:5000/api/image/download',
+    set_segmentation_Timer(){
+      this.timer = setInterval(() => {
+        setTimeout(()=>{
+          // 这里ajax 请求的代码片段和判断是否停止定时器
+          this.load_segmentation_result_pic(this.filename_of_pic_in_back);
+          if(this.result_of_process){
+            this.destroyTimer()
+          }
+          // 如需要停止定时器，只需加入以下：
+        }, 0)
+      }, 5000)
+    },
+    load_segmentation_result_pic(filename){
+      axios.post(' http://10.133.154.165:5000/api/image/download',
+          {  //body参数
+            filename:filename}, {headers: {  //头部参数
+              'Content-Type': 'application/json',
+            }
+          }
+      ).then(res=> { //请求成功
+        if(res.data.status ==='wait'){
+          this.result_of_process = false
+        }else {
+          console.log(res)
+          this.url_of_identity_process_result = res.data
+          console.log(this.url_of_identity_process_result)
+          this.result_of_process = true
+        }
+      })
+    },
+    load_identification_result_pic(filename){
+      axios.post('http://10.133.154.165:5000/api/image/download',
           {  //body参数
             filename:filename}, {headers: {  //头部参数
               'Content-Type': 'application/json',
@@ -206,12 +236,13 @@ export default {
     process_change_style(){
       this.model='changed_style_photo'
     },
-    process_identification(){
+    process_person(){
+      // this.model='person_photo';
       this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
-      request.post('/api/image/upload',param).then(res=>{
+      request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           var r=confirm("照片处理中，请稍后");
           this.filename_of_pic_in_back = res.message
@@ -221,13 +252,37 @@ export default {
           return
         };
       })
-      this.setTimer()
+      this.set_segmentation_Timer()
+    },
+    process_identification(){
+      this.model='identity_photo';
+      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+      let param = new FormData();
+      param.append('file',file,file.name)
+      request.post('/api/image/identification',param).then(res=>{
+        if(res.status=='success'){
+          var r=confirm("照片处理中，请稍后");
+          this.filename_of_pic_in_back = res.message
+        }else {
+          console.log(res)
+          var r=confirm("上传有误");
+          return
+        };
+      })
+      this.set_identification_Timer()
     },
     loadpic_button() {
       this.$refs.relFile.dispatchEvent(new MouseEvent('click'))
     },
     fileChange() {
       // 上传文件
+    },
+    return_to_main_page(){
+      this.model='main';
+      this.destroyTimer();
+      this.filename_of_pic_in_back='';
+      this.result_of_process=false;
+      this.url_of_identity_process_result='';
     }
   }
 }
@@ -240,25 +295,40 @@ export default {
   object-fit: contain;
   height: 300px;
 }
-/*新增*/
 /*导航栏*/
 .daohang{
-  width: 80%;
-  height: 40px;
-  margin-left: 10%;
+  margin-top: -8px;
+  width: 100%;
+  height: 50px;
   z-index:999;
   background-color: aliceblue;
+  margin-left: -10px;
+  border-left: 30px solid;
+  border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);
+  border-image-slice: 1;
+  border-image-width: 30px;
+  box-shadow: 20px 0 10px #837F7F;
 }
-.mm{
-  width: 40px;
-  height: 40px;
+.logo{
+  width: 50px;
+  height: 50px;
   background-image: url('../assets/22.png');
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
-  margin-left: 1%;
+  margin-left: 10%;
   z-index:999;
+  float: left;
 }
+.daohang p{
+  float: left;
+  padding-left: 28px;
+  margin-top: 12px;
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+}
+
 /*上面整个组件*/
 .up{
   width: 80%;
@@ -268,6 +338,7 @@ export default {
   background-size: 100% 100%;
   position: relative;
   margin-left: 10%;
+  margin-top: 2px;
 }
 .in1{
   width: 350px;
@@ -322,7 +393,7 @@ export default {
   object-fit: contain;
 }
 /*选择图片按钮*/
-.b1{
+.upload_btn{
   width: 150px;
   height: 50px;
   color: white;
@@ -332,9 +403,13 @@ export default {
   margin-left: 100px;
   border-radius: 5px;
   border:none;
+  font-size: 20px;
 }
-
-.b1:hover{
+.upload_btn:hover{
+  cursor:pointer;
+  color: whitesmoke;
+}
+.upload_btn:hover{
   background-color: rgb(0, 119, 255);/*改了颜色*/
 }
 /*扣人模块*/
@@ -366,14 +441,20 @@ export default {
 }
 
 .backToHome{
-  margin-top:30px;
-  margin-left:25px;
-  font-size: 25px;
+  margin-top:20px;
+  margin-left:-420px;
+  font-size: 27px;
   border-radius: 2px;
+  color: #0099FF;
   background-color: aliceblue;/*改了颜色*/
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   border: none;
+  font-weight: bold;
   outline: none;
+}
+.backToHome:hover{
+  color: #bedeff;
+  cursor: pointer;
 }
 
 .blockMain{
@@ -422,7 +503,7 @@ export default {
   border: none;
   outline: none;
 }
-/*扣物模块*/
+/*证件照模块*/
 .block-three{
   width: 30%;
   height: 300px;
@@ -438,28 +519,44 @@ export default {
   object-fit: contain;
   height: 300px;
 }
-.download2{
+.waiting_info{
+  padding-top:110px;
+  font-weight: bold;
+  font-size: 30px;
+  color: #b5eeff;
+}
+.download_btn{
   margin-left: 77%;
   margin-top: 180px;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 25px;
+  font-size: 30px;
   color: white;
   border-radius: 5px;
   background-color: #0099FF;/*改了颜色*/
   border: none;
   outline: none;
+  padding: 8px;
+}
+.download_btn:hover{
+  color: gainsboro;
+  cursor: pointer;
 }
 /*证件照模块*/
-.download3{
+.change_style_btn{
   margin-left: 77%;
-  margin-top: 50px;
+  margin-top: 20px;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 25px;
+  font-size: 30px;
   color: white;
   border-radius: 5px;
-  background-color: #0099FF;
+  background-color: #8aff84;
+  padding: 8px;
   border: none;
   outline: none;
+}
+.change_style_btn:hover{
+  color: whitesmoke;
+  cursor: pointer;
 }
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
@@ -483,6 +580,7 @@ export default {
   box-shadow: 0px 0px 10px #888888;
 }
 .b2:hover{
+  cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
 .b2:active{
@@ -502,6 +600,7 @@ export default {
   box-shadow: 0px 0px 10px #888888;
 }
 .b3:hover{
+  cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
 .b3:active{
@@ -522,6 +621,7 @@ export default {
 }
 .b4:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
 }
 .b4:active{
   box-shadow: 0px 0px 10px #888888;
@@ -541,6 +641,7 @@ export default {
 }
 .b5:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
 }
 .b5:active{
   box-shadow: 0px 0px 10px #888888;

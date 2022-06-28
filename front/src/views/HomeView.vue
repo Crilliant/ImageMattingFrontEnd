@@ -9,52 +9,44 @@
     <div class="in1">
       <form enctype="multipart/form-data" method="post">
         <p type="primary" class="main-submit" v-if="location_of_uploaded_img==''">提交图片</p>
-        <input ref="relFile" name="file" class="main-upload" type="file" @change="loadpic" >
+        <input ref="relFile" name="file" class="main-upload" type="file" @change="load_local_pic" >
         <div class="imgBox">
           <img id="original_pic" :src="location_of_uploaded_img" value='custom'/>
         </div>
       </form>
-      <button @click="loadpic_button" class="upload_btn">点击上传图片</button>
-<!--      装饰模块-->
+      <button @click="load_pic_button" class="upload_btn">点击上传图片</button>
       </div><div class="d1">
       </div><div class="d3">
       </div><div class="d2">
     </div>
   </div>
-  <!--中间三个控件-->
-  <div class="middle">
-    <div ><button class="b2" @click="process_identification"></button></div>
-    <div><button class="b3" @click="process_person"></button></div>
-    <div><button class="b4" @click="process_change_background"></button></div>
-    <div><button class="b5" @click="process_change_style"></button></div>
-  </div>
-<!--  人物抠取模块-->
-  <div v-if="model=='person_photo'" class="person">
+<!--  证件照模块-->
+  <div v-if="model=='identity_photo'" class="person">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <!--      图片位置-->
       <div class="block-one">
       </div>
       <div class="block-two"></div>
       <div class="select-BGColor" v-cloak></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-<!--      装饰模块-->
       <div class="pe1"></div>
       <div class="pe2"></div>
       <div class="pe3"></div>
     </div>
   </div>
-<!--  证件照模块-->
-  <div v-if="model=='identity_photo'" class="identity_part">
+<!--  人物抠取模块-->
+  <div v-if="model=='person_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <!--      图片位置-->
       <div class="block-three">
         <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
         <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
       </div>
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
+    <div class="zj1"></div>
+    <div class="zj2"></div>
+    <div class="zj3"></div>
   </div>
 <!--  换背景模块-->
   <div v-if="model=='changed_background_photo'" class="changebg_part">
@@ -91,15 +83,20 @@
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
     </div>
-    <div class="bg1"></div>
-    <div class="bg2"></div>
-    <div class="bg3"></div>
-    <div class="bg4"></div>
+    <div class="st1"></div>
+    <div class="st2"></div>
+  </div>
+  <!--中间4个控件-->
+  <div class="middle">
+    <div ><button class="identity_button" @click="process_identification"></button></div>
+    <div><button class="person_process_button" @click="process_person"></button></div>
+    <div><button class="change_bg_button" @click="process_change_background"></button></div>
+    <div><button class="change_style_button" @click="process_change_style"></button></div>
   </div>
   <!--下面部分-->
   <div class="down">
     <div style="width:800px;height:1px;margin:70px auto;
-    padding:0px;background-color:#D5D5D5;overflow:hidden;">
+    padding:0px;background-color:#D5D5D5;overflow:hidden;z-index:-1;">
     </div>
   </div>
 
@@ -120,12 +117,8 @@
 </template>
 
 <script>
-// @ is an alias to /src
-//先把图片上传显示出来
-//加一个a标签，获取图片的流，点download下载就好了
 import request from "@/utils/request";
-import axios from "axios";
-import request_of_jason from "@/utils/request";
+import request_of_jason from "@/utils/request_of_jason";
 
 export default {
   name: 'HomeView',
@@ -144,9 +137,10 @@ export default {
       bg_option:[]
     }
   },watch:{
-  },methods:{
+  },
+  methods:{
     // 加载图片并预览
-    loadpic(e){
+    load_local_pic(e){
       const reader = new FileReader()
       reader.readAsDataURL(e.target.files[0])
       reader.onload = () => {
@@ -165,7 +159,30 @@ export default {
       }
       return new File([u8arr],filename,{type:contentType})
     },
-    //将图片文件传递给后端
+    // 设置计时器获取处理结果文件的url
+    set_Timer(){
+      this.timer = setInterval(() => {
+        setTimeout(()=>{
+          // 这里ajax 请求的代码片段和判断是否停止定时器
+          this.load_result_pic(this.filename_of_pic_in_back);
+          if(this.result_of_process){
+            this.destroyTimer()
+          }
+          // 如需要停止定时器，只需加入以下：
+        }, 0)
+      }, 5000)
+    },
+    // 获取后端处理后生成的url
+    load_result_pic(filename){
+      request_of_jason.post('/api/image/download',{filename:filename}).then(res=> { //请求成功
+        if(res.status ==='wait'){
+          this.result_of_process = false
+        }else {
+          this.url_of_identity_process_result = res.url
+          this.result_of_process = true
+        }
+      })
+    },
     // 根据后端传回的url下载文件到本地
     download_Result() {
       fetch(this.url_of_identity_process_result).then(res=>res.blob()).then(res=>{
@@ -175,73 +192,11 @@ export default {
         bqa.click();
       })
     },
+    // 删除计时器
     destroyTimer(){
       clearInterval(this.timer);
       this.timer=null;
     },
-    //设置定时器，每隔一段时间发送请求
-    // 根据url显示处理后的图片文件
-    set_identification_Timer(){
-        this.timer = setInterval(() => {
-            setTimeout(()=>{
-              // 这里ajax 请求的代码片段和判断是否停止定时器
-              this.load_identification_result_pic(this.filename_of_pic_in_back);
-              if(this.result_of_process){
-                this.destroyTimer()
-              }
-              // 如需要停止定时器，只需加入以下：
-            }, 0)
-        }, 5000)
-    },
-    set_segmentation_Timer(){
-      this.timer = setInterval(() => {
-        setTimeout(()=>{
-          // 这里ajax 请求的代码片段和判断是否停止定时器
-          this.load_segmentation_result_pic(this.filename_of_pic_in_back);
-          if(this.result_of_process){
-            this.destroyTimer()
-          }
-          // 如需要停止定时器，只需加入以下：
-        }, 0)
-      }, 5000)
-    },
-    load_segmentation_result_pic(filename){
-      axios.post(' http://10.133.154.165:5000/api/image/download',
-          {  //body参数
-            filename:filename}, {headers: {  //头部参数
-              'Content-Type': 'application/json',
-            }
-          }
-      ).then(res=> { //请求成功
-        if(res.data.status ==='wait'){
-          this.result_of_process = false
-        }else {
-          console.log(res)
-          this.url_of_identity_process_result = res.data
-          console.log(this.url_of_identity_process_result)
-          this.result_of_process = true
-        }
-      })
-    },
-    load_identification_result_pic(filename){
-      axios.post('http://10.133.154.165:5000/api/image/download',
-          {  //body参数
-            filename:filename}, {headers: {  //头部参数
-              'Content-Type': 'application/json',
-            }
-          }
-      ).then(res=> { //请求成功
-        if(res.data.status ==='wait'){
-          this.result_of_process = false
-        }else {
-          console.log(res)
-          this.url_of_identity_process_result = res.data
-          console.log(this.url_of_identity_process_result)
-          this.result_of_process = true
-        }
-          })
-      },
-    //改变背景功能模块
     process_change_background(){
       this.model='changed_background_photo';
       request_of_jason.post('/api/background/load').then(res=>{
@@ -268,11 +223,12 @@ export default {
       this.model='changed_style_photo'
     },
     process_person(){
-      // this.model='person_photo';
-      this.model='identity_photo';
+      this.model='person_photo';
+      //this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
+      // 上传图片到后端
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           var r=confirm("照片处理中，请稍后");
@@ -283,7 +239,7 @@ export default {
           return
         };
       })
-      this.set_segmentation_Timer()
+      this.set_Timer()
     },
     process_identification(){
       this.model='identity_photo';
@@ -300,9 +256,9 @@ export default {
           return
         };
       })
-      this.set_identification_Timer()
+      this.set_Timer()
     },
-    loadpic_button() {
+    load_pic_button() {
       this.$refs.relFile.dispatchEvent(new MouseEvent('click'))
     },
     fileChange() {
@@ -311,6 +267,7 @@ export default {
     return_to_main_page(){
       this.model='main';
       this.destroyTimer();
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
       this.url_of_identity_process_result='';
@@ -353,11 +310,11 @@ export default {
 /*导航栏*/
 .daohang{
   margin-top: -8px;
-  width: 100%;
+  width: 77.5%;
   height: 50px;
   z-index:999;
   background-color: aliceblue;
-  margin-left: -10px;
+  margin-left: 10%;
   border-left: 30px solid;
   border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);
   border-image-slice: 1;
@@ -469,12 +426,14 @@ export default {
 }
 /*扣人模块*/
 .person{
+  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
   background-image: url('../assets/14.png');
   background-size: 100% 100%;
   margin-left: 10%;
+  z-index: 999;
 }
 
 .changebg_part{
@@ -487,6 +446,7 @@ export default {
 }
 
 .identity_part{
+  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
@@ -604,7 +564,7 @@ export default {
   font-size: 30px;
   color: white;
   border-radius: 5px;
-  background-color: #8aff84;
+  background-color: #0099FF;
   padding: 8px;
   border: none;
   outline: none;
@@ -615,6 +575,8 @@ export default {
 }
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
+  z-index: 999;
+  margin-top: 85px;
   position: absolute;
   width: 80%;
   height: 200px;
@@ -622,7 +584,7 @@ export default {
   background-color: #F7F9FB;
 }
 
-.b2{
+.identity_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/5.png');
@@ -634,15 +596,15 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b2:hover{
+.identity_button:hover{
   cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
-.b2:active{
+.identity_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 
-.b3{
+.person_process_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/3.png');
@@ -654,15 +616,15 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b3:hover{
+.person_process_button:hover{
   cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
-.b3:active{
+.person_process_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 
-.b4{
+.change_bg_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/4.png');
@@ -674,15 +636,14 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b4:hover{
+.change_bg_button:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
   cursor: pointer;
 }
-.b4:active{
+.change_bg_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
-.b5{
+.change_style_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/9.png');
@@ -694,11 +655,11 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b5:hover{
+.change_style_button:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
   cursor: pointer;
 }
-.b5:active{
+.change_style_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 
@@ -842,7 +803,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 6%;
-  margin-top: 450px;
+  margin-top: 400px;
   z-index:999;
   background-image: url('../assets/15.png');
 }
@@ -852,7 +813,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 45%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/17.png');
 }
@@ -862,7 +823,7 @@ export default {
   background-size: 100% 100%;
   position: absolute;
   margin-left: 65%;
-  margin-top: 450px;
+  margin-top: 380px;
   z-index:999;
   background-image: url('../assets/16.png');
 }
@@ -905,5 +866,55 @@ export default {
   margin-top: 730px;
   z-index:999;
   background-image: url('../assets/21.png');
+}
+.st1{
+  width: 300px;
+  height: 240px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 21%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/23.jpg');
+}
+.st2{
+  width: 300px;
+  height: 240px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 53%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/24.jpg');
+}
+.zj1{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 20%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/25.png');
+}
+.zj2{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 42%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/26.jpg');
+}
+.zj3{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 65%;
+  margin-top: 750px;
+  z-index:999;
+  background-image: url('../assets/27.png');
 }
 </style>

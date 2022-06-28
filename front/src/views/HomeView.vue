@@ -61,12 +61,21 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
-        <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
-        <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
+        <div class="waiting_info" v-if="url_of_bg_process_result==''">图片加载中...</div>
+        <img id="change_bg_result_img_original" value="custom" :src="url_of_bg_process_result">
       </div>
-      <div class="block-two"></div>
+      <div class="block-two">
+        <img :src="url_of_bg_img_from_back" id="result_of_change_bg_back_img">
+        <img :src='url_of_bg_process_result' id="result_of_change_bg_person">
+      </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
+    </div>
+    <div id="bgGroup">
+      <img :src=bg_option[0] @click="change_bg(0)">
+      <img :src=bg_option[1] @click="change_bg(1)">
+      <img :src=bg_option[2] @click="change_bg(2)">
+      <img :src=bg_option[3] @click="change_bg(3)">
     </div>
     <div class="bg1"></div>
     <div class="bg2"></div>
@@ -127,10 +136,12 @@ export default {
       model:"main",
       location_of_uploaded_img:"",//本地上传图片的地址
       url_of_identity_process_result:"",//后端处理后图片地址
-      url_of_changebg_process_result:"",
+      url_of_bg_process_result:"",//后端处理后的分割图
       filename_of_pic_in_back:"",//后台存储文件名
       result_of_process:false,
-      timer:null
+      timer:null,
+      url_of_bg_img_from_back:'',//选中的后台提供背景图片url
+      bg_option:[]
     }
   },watch:{
   },methods:{
@@ -230,9 +241,29 @@ export default {
         }
           })
       },
+    //改变背景功能模块
     process_change_background(){
-      this.model='changed_background_photo'
+      this.model='changed_background_photo';
+      request_of_jason.post('/api/background/load').then(res=>{
+        console.log(res);
+        this.bg_option = res.urls;
+      });
+
     },
+    change_bg(order_of_bg_img){
+      this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
+    },
+
+
+
+
+
+
+
+
+
+
+
     process_change_style(){
       this.model='changed_style_photo'
     },
@@ -289,7 +320,31 @@ export default {
 
 </script>
 <style>
-#changebg_result_img{
+#bgGroup{
+  border: #5E5D5D solid 5px;
+}
+#result_of_change_bg_back_img{
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 300px;
+  z-index: 10;
+}
+#result_of_change_bg_person{
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 300px;
+  z-index: 60;
+}
+#bgGroup img{
+  float: left;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 300px;
+}
+#change_bg_result_img_original{
   max-height: 100%;
   max-width: 100%;
   object-fit: contain;

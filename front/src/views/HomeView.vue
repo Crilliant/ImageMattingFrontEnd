@@ -15,34 +15,29 @@
         </div>
       </form>
       <button @click="load_pic_button" class="upload_btn">点击上传图片</button>
-<!--      装饰模块-->
       </div><div class="d1">
       </div><div class="d3">
       </div><div class="d2">
     </div>
   </div>
-
-<!--  人物抠取模块-->
-  <div v-if="model=='person_photo'" class="person">
+<!--  证件照模块-->
+  <div v-if="model=='identity_photo'" class="person">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <!--      图片位置-->
       <div class="block-one">
       </div>
       <div class="block-two"></div>
       <div class="select-BGColor" v-cloak></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-<!--      装饰模块-->
       <div class="pe1"></div>
       <div class="pe2"></div>
       <div class="pe3"></div>
     </div>
   </div>
-<!--  证件照模块-->
-  <div v-if="model=='identity_photo'" class="identity_part">
+<!--  人物抠取模块-->
+  <div v-if="model=='person_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <!--      图片位置-->
       <div class="block-three">
         <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
         <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
@@ -81,15 +76,13 @@
     </div>
     <div class="st1"></div>
     <div class="st2"></div>
-<!--    <div class="bg3"></div>-->
-<!--    <div class="bg4"></div>-->
   </div>
   <!--中间4个控件-->
   <div class="middle">
-    <div ><button class="b2" @click="process_identification"></button></div>
-    <div><button class="b3" @click="process_person"></button></div>
-    <div><button class="b4" @click="process_change_background"></button></div>
-    <div><button class="b5" @click="process_change_style"></button></div>
+    <div ><button class="identity_button" @click="process_identification"></button></div>
+    <div><button class="person_process_button" @click="process_person"></button></div>
+    <div><button class="change_bg_button" @click="process_change_background"></button></div>
+    <div><button class="change_style_button" @click="process_change_style"></button></div>
   </div>
   <!--下面部分-->
   <div class="down">
@@ -529,7 +522,7 @@ export default {
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
   z-index: 999;
-  margin-top: 800px;
+  margin-top: 85px;
   position: absolute;
   width: 80%;
   height: 200px;
@@ -537,7 +530,7 @@ export default {
   background-color: #F7F9FB;
 }
 
-.b2{
+.identity_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/5.png');
@@ -549,15 +542,15 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b2:hover{
+.identity_button:hover{
   cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
-.b2:active{
+.identity_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 
-.b3{
+.person_process_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/3.png');
@@ -569,15 +562,15 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b3:hover{
+.person_process_button:hover{
   cursor: pointer;
   box-shadow: 0px 0px 10px #5E5D5D;
 }
-.b3:active{
+.person_process_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 
-.b4{
+.change_bg_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/4.png');
@@ -589,15 +582,14 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b4:hover{
+.change_bg_button:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
   cursor: pointer;
 }
-.b4:active{
+.change_bg_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
-.b5{
+.change_style_button{
   width: 150px;
   height: 150px;
   background-image: url('../assets/9.png');
@@ -609,11 +601,11 @@ export default {
   border: none;
   box-shadow: 0px 0px 10px #888888;
 }
-.b5:hover{
+.change_style_button:hover{
   box-shadow: 0px 0px 10px #5E5D5D;
   cursor: pointer;
 }
-.b5:active{
+.change_style_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
 

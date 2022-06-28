@@ -2,7 +2,7 @@
 <!--  导航栏-->
   <div class="daohang">
     <div class="logo"></div>
-    <p>欢迎使用猫之使徒在线抠图！</p>
+    <p style="color: black;font-family: 'Microsoft YaHei'">在线抠图</p>
   </div>
   <!--上面部分-->
   <div class="up" v-if="model=='main'">
@@ -64,6 +64,14 @@
       <div class="block-two"></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
+      <div>
+        <button class="g1"></button>
+        <button class="g2"></button>
+        <button class="g3"></button>
+        <button class="g4"></button>
+        <button class="g5"></button>
+      </div>
+
     </div>
     <div class="bg1"></div>
     <div class="bg2"></div>
@@ -84,6 +92,7 @@
 <!--    <div class="bg3"></div>-->
 <!--    <div class="bg4"></div>-->
   </div>
+
   <!--中间4个控件-->
   <div class="middle">
     <div ><button class="b2" @click="process_identification"></button></div>
@@ -91,6 +100,7 @@
     <div><button class="b4" @click="process_change_background"></button></div>
     <div><button class="b5" @click="process_change_style"></button></div>
   </div>
+
   <!--下面部分-->
   <div class="down">
     <div style="width:800px;height:1px;margin:70px auto;
@@ -112,6 +122,9 @@
     <div class="p8">
     </div>
   </div>
+<!--  背景图-->
+  <div class="background"></div>
+
 </template>
 
 <script>
@@ -263,16 +276,16 @@ export default {
 /*导航栏*/
 .daohang{
   margin-top: -8px;
-  width: 77.5%;
+  width: 80%;
   height: 50px;
   z-index:999;
-  background-color: aliceblue;
+  background-color: rgb(250,250,250);
   margin-left: 10%;
-  border-left: 30px solid;
-  border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);
-  border-image-slice: 1;
-  border-image-width: 30px;
-  box-shadow: 20px 0 10px #837F7F;
+  /*border-left: 30px solid;*/
+  /*border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);*/
+  /*border-image-slice: 1;*/
+  /*border-image-width: 30px;*/
+  box-shadow: 0px 5px  rgba(0, 0, 0, .2);
 }
 .logo{
   width: 50px;
@@ -281,7 +294,7 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
-  margin-left: 10%;
+  margin-left: 3%;
   z-index:999;
   float: left;
 }
@@ -364,7 +377,7 @@ export default {
   color: white;
   background-color: #0099FF;/*改了颜色*/
   position: absolute;
-  margin-top: 10px;
+  margin-top: 40px;
   margin-left: 100px;
   border-radius: 5px;
   border:none;
@@ -408,7 +421,7 @@ export default {
 
 .backToHome{
   margin-top:20px;
-  margin-left:-420px;
+  margin-left:-170px;
   font-size: 27px;
   border-radius: 2px;
   color: #0099FF;
@@ -417,6 +430,7 @@ export default {
   border: none;
   font-weight: bold;
   outline: none;
+  position: static;
 }
 .backToHome:hover{
   color: #bedeff;
@@ -427,7 +441,7 @@ export default {
   /*改了大小*/
   width: 90%;
   height: 400px;
-  background-color: rgb(255, 250, 230);
+  background-color: rgb(250,250,250);
   position: absolute;
   margin-top: 20px;
   margin-left: 5%;
@@ -493,7 +507,7 @@ export default {
 }
 .download_btn{
   margin-left: 77%;
-  margin-top: 180px;
+  margin-top: 90px;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-size: 30px;
   color: white;
@@ -502,6 +516,7 @@ export default {
   border: none;
   outline: none;
   padding: 8px;
+  position: static;
 }
 .download_btn:hover{
   color: gainsboro;
@@ -527,7 +542,7 @@ export default {
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
   position: absolute;
-  width: 80%;
+  width: 79%;
   height: 200px;
   margin-left: 10%;
   background-color: #F7F9FB;
@@ -615,7 +630,7 @@ export default {
 
 /*下面部分*/
 .down{
-  width: 80%;
+  width: 79%;
   height: 400px;
   margin-left: 10%;
   margin-top: 200px;
@@ -680,7 +695,7 @@ export default {
 
 /*最下面*/
 .bottom{
-  width: 80%;
+  width: 79%;
   height: 800px;
   position: absolute;
   margin-left: 10%;
@@ -867,4 +882,117 @@ export default {
   z-index:999;
   background-image: url('../assets/27.png');
 }
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 1000px;
+  z-index: -10;
+  zoom: 1;
+  background-color: #fff;
+  background-image: url(../assets/28.png) ;
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-position: center 0;
+}
+.g1{
+  width: 40px;
+  height: 40px;
+  background-image: url('../assets/29.png');
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 70%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g1:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g1:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2{
+  width: 40px;
+  height: 40px;
+  background-image: url('../assets/30.png');
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 75%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2:hover{
+   box-shadow: 0px 0px 10px #5E5D5D;
+   cursor: pointer;
+ }
+.g2:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3{
+  width: 40px;
+  height: 40px;
+  background-image: url('../assets/31.png');
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 80%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g3:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4{
+  width: 40px;
+  height: 40px;
+  background-image: url('../assets/32.png');
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 85%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g4:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5{
+  width: 40px;
+  height: 40px;
+  background-image: url('../assets/33.png');
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 90%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g5:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+
 </style>

@@ -2,7 +2,7 @@
 <!--  导航栏-->
   <div class="daohang">
     <div class="logo"></div>
-    <p>欢迎使用猫之使徒在线抠图！</p>
+    <p style="color: black;font-family: 'Microsoft YaHei'">在线抠图</p>
   </div>
   <!--上面部分-->
   <div class="up" v-if="model=='main'">
@@ -20,28 +20,33 @@
       </div><div class="d2">
     </div>
   </div>
+
+<!--  人物抠取模块-->
+  <div v-if="model=='person_photo'" class="person">
+    <button class="backToHome" @click="return_to_main_page">返回首页</button>
+    <div class="blockMain">
+      <!--      图片位置-->
+      <div class="block-three">
+        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
+        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
+      </div>
+      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
+<!--      装饰模块-->
+      <div class="pe1"></div>
+      <div class="pe2"></div>
+      <div class="pe3"></div>
+    </div>
+  </div>
 <!--  证件照模块-->
-  <div v-if="model=='identity_photo'" class="person">
+  <div v-if="model=='identity_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
       </div>
       <div class="block-two"></div>
       <div class="select-BGColor" v-cloak></div>
-      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-      <div class="pe1"></div>
-      <div class="pe2"></div>
-      <div class="pe3"></div>
-    </div>
-  </div>
-<!--  人物抠取模块-->
-  <div v-if="model=='person_photo'" class="identity_part">
-    <button class="backToHome" @click="return_to_main_page">返回首页</button>
-    <div class="blockMain">
-      <div class="block-three">
-        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <img id="identity_result_img" :src="url_normal_process_result" value='custom'/>
-      </div>
+      <!--      图片位置-->
+
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
     <div class="zj1"></div>
@@ -52,16 +57,21 @@
   <div v-if="model=='changed_background_photo'" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <div class="block-one">
-        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <img id="change_bg_result_img_original" value="custom" :src="url_normal_process_result">
+      <div class="block-four">
+        <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
+        <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
       </div>
-      <div class="block-two">
-        <img :src="url_of_bg_img_from_back" id="result_of_change_bg_back_img">
-        <img :src='url_normal_process_result' id="result_of_change_bg_person">
-      </div>
+      <div class="block-five"></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
+      <div>
+        <button class="g1"></button>
+        <button class="g2"></button>
+        <button class="g3"></button>
+        <button class="g4"></button>
+        <button class="g5"></button>
+      </div>
+
     </div>
     <div id="bgGroup">
       <img :src=bg_option[0] @click="change_bg(0)">
@@ -85,7 +95,10 @@
     </div>
     <div class="st1"></div>
     <div class="st2"></div>
+<!--    <div class="bg3"></div>-->
+<!--    <div class="bg4"></div>-->
   </div>
+
   <!--中间4个控件-->
   <div class="middle">
     <div ><button class="identity_button" @click="process_identification"></button></div>
@@ -93,6 +106,7 @@
     <div><button class="change_bg_button" @click="process_change_background"></button></div>
     <div><button class="change_style_button" @click="process_change_style"></button></div>
   </div>
+
   <!--下面部分-->
   <div class="down">
     <div style="width:800px;height:1px;margin:70px auto;
@@ -114,6 +128,9 @@
     <div class="p8">
     </div>
   </div>
+<!--  背景图-->
+  <div class="background"></div>
+
 </template>
 
 <script>
@@ -283,8 +300,8 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
-      this.url_normal_process_result='';
-
+      this.url_of_identity_process_result='';
+      request_of_jason.post('/delete',{operation:this.filename_of_pic_in_back})
     }
   }
 }
@@ -327,16 +344,16 @@ export default {
 /*导航栏*/
 .daohang{
   margin-top: -8px;
-  width: 77.5%;
+  width: 80%;
   height: 50px;
   z-index:999;
-  background-color: aliceblue;
+  background-color: rgb(250,250,250);
   margin-left: 10%;
-  border-left: 30px solid;
-  border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);
-  border-image-slice: 1;
-  border-image-width: 30px;
-  box-shadow: 20px 0 10px #837F7F;
+  /*border-left: 30px solid;*/
+  /*border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);*/
+  /*border-image-slice: 1;*/
+  /*border-image-width: 30px;*/
+  box-shadow: 0px 5px  rgba(0, 0, 0, .2);
 }
 .logo{
   width: 50px;
@@ -345,7 +362,7 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
-  margin-left: 10%;
+  margin-left: 3%;
   z-index:999;
   float: left;
 }
@@ -366,8 +383,8 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
-  margin-left: 10%;
-  margin-top: 2px;
+  left: 10%;
+  top: 2px;
 }
 .in1{
   width: 350px;
@@ -428,7 +445,7 @@ export default {
   color: white;
   background-color: #0099FF;/*改了颜色*/
   position: absolute;
-  margin-top: 10px;
+  margin-top: 40px;
   margin-left: 100px;
   border-radius: 5px;
   border:none;
@@ -443,7 +460,6 @@ export default {
 }
 /*扣人模块*/
 .person{
-  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
@@ -463,7 +479,6 @@ export default {
 }
 
 .identity_part{
-  z-index: 999;
   width: 80%;
   height: 490px;
   position: relative;
@@ -474,7 +489,7 @@ export default {
 
 .backToHome{
   margin-top:20px;
-  margin-left:-420px;
+  margin-left:-170px;
   font-size: 27px;
   border-radius: 2px;
   color: #0099FF;
@@ -483,6 +498,7 @@ export default {
   border: none;
   font-weight: bold;
   outline: none;
+  position: static;
 }
 .backToHome:hover{
   color: #bedeff;
@@ -493,7 +509,7 @@ export default {
   /*改了大小*/
   width: 90%;
   height: 400px;
-  background-color: rgb(255, 250, 230);
+  background-color: rgb(250,250,250);
   position: absolute;
   margin-top: 20px;
   margin-left: 5%;
@@ -552,14 +568,14 @@ export default {
   height: 300px;
 }
 .waiting_info{
-  padding-top:110px;
+  padding-top:70px;
   font-weight: bold;
-  font-size: 30px;
+  font-size: 20px;
   color: #b5eeff;
 }
 .download_btn{
   margin-left: 77%;
-  margin-top: 180px;
+  margin-top: 90px;
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-size: 30px;
   color: white;
@@ -568,6 +584,7 @@ export default {
   border: none;
   outline: none;
   padding: 8px;
+  position: static;
 }
 .download_btn:hover{
   color: gainsboro;
@@ -592,10 +609,8 @@ export default {
 }
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
-  z-index: 999;
-  margin-top: 85px;
   position: absolute;
-  width: 80%;
+  width: 79%;
   height: 200px;
   margin-left: 10%;
   background-color: #F7F9FB;
@@ -682,7 +697,7 @@ export default {
 
 /*下面部分*/
 .down{
-  width: 80%;
+  width: 79%;
   height: 400px;
   margin-left: 10%;
   margin-top: 200px;
@@ -747,7 +762,7 @@ export default {
 
 /*最下面*/
 .bottom{
-  width: 80%;
+  width: 79%;
   height: 800px;
   position: absolute;
   margin-left: 10%;
@@ -819,8 +834,8 @@ export default {
   height: 150px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 6%;
-  margin-top: 400px;
+  left: 6%;
+  top: 750px;
   z-index:999;
   background-image: url('../assets/15.png');
 }
@@ -829,8 +844,8 @@ export default {
   height: 220px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 45%;
-  margin-top: 380px;
+  left: 45%;
+  top: 730px;
   z-index:999;
   background-image: url('../assets/17.png');
 }
@@ -839,8 +854,8 @@ export default {
   height: 220px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 65%;
-  margin-top: 380px;
+  left: 65%;
+  top: 730px;
   z-index:999;
   background-image: url('../assets/16.png');
 }
@@ -933,5 +948,130 @@ export default {
   margin-top: 750px;
   z-index:999;
   background-image: url('../assets/27.png');
+}
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 1000px;
+  z-index: -10;
+  zoom: 1;
+  background-color: #fff;
+  background-image: url(../assets/28.png) ;
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-position: center 0;
+}
+.g1{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 12%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g1:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g1:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 18%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2:hover{
+   box-shadow: 0px 0px 10px #5E5D5D;
+   cursor: pointer;
+ }
+.g2:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 8%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g3:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 15%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g4:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 22%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g5:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.block-four{
+  width: 15%;
+  height: 180px;
+  background-color: white;
+  position: absolute;
+  margin-top: 40px;
+  margin-left: 10%;
+  text-align: center;
+}
+
+.block-five{
+  width: 30%;
+  height: 360px;
+  background-color: white;
+  position: absolute;
+  margin-top: 20px;
+  margin-left: 35%;
 }
 </style>

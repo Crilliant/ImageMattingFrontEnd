@@ -39,8 +39,8 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-three">
-        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
-        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="identity_result_img" :src="url_normal_process_result" value='custom'/>
       </div>
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
@@ -53,12 +53,12 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
-        <div class="waiting_info" v-if="url_of_bg_process_result==''">图片加载中...</div>
-        <img id="change_bg_result_img_original" value="custom" :src="url_of_bg_process_result">
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="change_bg_result_img_original" value="custom" :src="url_normal_process_result">
       </div>
       <div class="block-two">
         <img :src="url_of_bg_img_from_back" id="result_of_change_bg_back_img">
-        <img :src='url_of_bg_process_result' id="result_of_change_bg_person">
+        <img :src='url_normal_process_result' id="result_of_change_bg_person">
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
@@ -128,8 +128,7 @@ export default {
     return{
       model:"main",
       location_of_uploaded_img:"",//本地上传图片的地址
-      url_of_identity_process_result:"",//后端处理后图片地址
-      url_of_bg_process_result:"",//后端处理后的分割图
+      url_normal_process_result:"",//后端处理后图片地址
       filename_of_pic_in_back:"",//后台存储文件名
       result_of_process:false,
       timer:null,
@@ -178,14 +177,14 @@ export default {
         if(res.status ==='wait'){
           this.result_of_process = false
         }else {
-          this.url_of_identity_process_result = res.url
+          this.url_normal_process_result = res.url
           this.result_of_process = true
         }
       })
     },
     // 根据后端传回的url下载文件到本地
     download_Result() {
-      fetch(this.url_of_identity_process_result).then(res=>res.blob()).then(res=>{
+      fetch(this.url_normal_process_result).then(res=>res.blob()).then(res=>{
         const bqa = document.createElement("a");
         bqa.setAttribute("download", this.filename_of_pic_in_back);
         bqa.setAttribute("href", URL.createObjectURL(res));
@@ -203,7 +202,21 @@ export default {
         console.log(res);
         this.bg_option = res.urls;
       });
-
+      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+      let param = new FormData();
+      param.append('file',file,file.name)
+      // 上传图片到后端
+      request.post('/api/image/segmentation',param).then(res=>{
+        if(res.status=='success'){
+          var r=confirm("照片处理中，请稍后");
+          this.filename_of_pic_in_back = res.message
+        }else {
+          console.log(res)
+          var r=confirm("上传有误");
+          return
+        };
+      })
+      this.set_Timer()
     },
     change_bg(order_of_bg_img){
       this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
@@ -270,7 +283,8 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
-      this.url_of_identity_process_result='';
+      this.url_normal_process_result='';
+
     }
   }
 }
@@ -284,12 +298,14 @@ export default {
   max-height: 100%;
   max-width: 100%;
   object-fit: contain;
+  position: absolute;
   height: 300px;
   z-index: 10;
 }
 #result_of_change_bg_person{
   max-height: 100%;
   max-width: 100%;
+  position: absolute;
   object-fit: contain;
   height: 300px;
   z-index: 60;
@@ -300,6 +316,7 @@ export default {
   max-width: 100%;
   object-fit: contain;
   height: 300px;
+  cursor: pointer;
 }
 #change_bg_result_img_original{
   max-height: 100%;

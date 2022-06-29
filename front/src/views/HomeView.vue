@@ -27,10 +27,10 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <!--      图片位置-->
-      <div class="block-one">
+      <div class="block-three">
+        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
+        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
       </div>
-      <div class="block-two"></div>
-      <div class="select-BGColor" v-cloak></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
 <!--      装饰模块-->
       <div class="pe1"></div>
@@ -42,11 +42,12 @@
   <div v-if="model=='identity_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <!--      图片位置-->
-      <div class="block-three">
-        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
-        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
+      <div class="block-one">
       </div>
+      <div class="block-two"></div>
+      <div class="select-BGColor" v-cloak></div>
+      <!--      图片位置-->
+
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
     <div class="zj1"></div>
@@ -57,11 +58,11 @@
   <div v-if="model=='changed_background_photo'" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <div class="block-one">
+      <div class="block-four">
         <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
         <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
       </div>
-      <div class="block-two"></div>
+      <div class="block-five"></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
       <div>
@@ -315,8 +316,8 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
-  margin-left: 10%;
-  margin-top: 2px;
+  left: 10%;
+  top: 2px;
 }
 .in1{
   width: 350px;
@@ -500,9 +501,9 @@ export default {
   height: 300px;
 }
 .waiting_info{
-  padding-top:110px;
+  padding-top:70px;
   font-weight: bold;
-  font-size: 30px;
+  font-size: 20px;
   color: #b5eeff;
 }
 .download_btn{
@@ -767,8 +768,8 @@ export default {
   height: 150px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 6%;
-  margin-top: 400px;
+  left: 6%;
+  top: 750px;
   z-index:999;
   background-image: url('../assets/15.png');
 }
@@ -777,8 +778,8 @@ export default {
   height: 220px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 45%;
-  margin-top: 380px;
+  left: 45%;
+  top: 730px;
   z-index:999;
   background-image: url('../assets/17.png');
 }
@@ -787,8 +788,8 @@ export default {
   height: 220px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 65%;
-  margin-top: 380px;
+  left: 65%;
+  top: 730px;
   z-index:999;
   background-image: url('../assets/16.png');
 }
@@ -902,10 +903,9 @@ export default {
 .g1{
   width: 40px;
   height: 40px;
-  background-image: url('../assets/29.png');
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 70%;
+  margin-left: 12%;
   margin-top: 40px;
   border-width: 3px;
   border: none;
@@ -921,10 +921,9 @@ export default {
 .g2{
   width: 40px;
   height: 40px;
-  background-image: url('../assets/30.png');
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 75%;
+  margin-left: 18%;
   margin-top: 40px;
   border-width: 3px;
   border: none;
@@ -940,11 +939,10 @@ export default {
 .g3{
   width: 40px;
   height: 40px;
-  background-image: url('../assets/31.png');
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 80%;
-  margin-top: 40px;
+  margin-left: 8%;
+  margin-top: 95px;
   border-width: 3px;
   border: none;
   box-shadow: 0px 0px 10px #888888;
@@ -959,11 +957,10 @@ export default {
 .g4{
   width: 40px;
   height: 40px;
-  background-image: url('../assets/32.png');
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 85%;
-  margin-top: 40px;
+  margin-left: 15%;
+  margin-top: 95px;
   border-width: 3px;
   border: none;
   box-shadow: 0px 0px 10px #888888;
@@ -978,11 +975,10 @@ export default {
 .g5{
   width: 40px;
   height: 40px;
-  background-image: url('../assets/33.png');
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 90%;
-  margin-top: 40px;
+  margin-left: 22%;
+  margin-top: 95px;
   border-width: 3px;
   border: none;
   box-shadow: 0px 0px 10px #888888;
@@ -994,5 +990,22 @@ export default {
 .g5:active{
   box-shadow: 0px 0px 10px #888888;
 }
+.block-four{
+  width: 15%;
+  height: 180px;
+  background-color: white;
+  position: absolute;
+  margin-top: 40px;
+  margin-left: 10%;
+  text-align: center;
+}
 
+.block-five{
+  width: 30%;
+  height: 360px;
+  background-color: white;
+  position: absolute;
+  margin-top: 20px;
+  margin-left: 35%;
+}
 </style>

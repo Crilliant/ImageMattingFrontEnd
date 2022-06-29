@@ -3,6 +3,7 @@
   <div class="daohang">
     <div class="logo"></div>
     <p style="color: black;font-family: 'Microsoft YaHei'">在线抠图</p>
+    <button @click="process_about_us" class="about"> 关于我们</button>
   </div>
   <!--上面部分-->
   <div class="up" v-if="model=='main'">
@@ -131,12 +132,24 @@
       <img src="../assets/34.png">
     </div>
   </a>
+  <!--关于我们-->
+  <div v-if="model=='about_us'" class="about_us">
+    <div class="changebg_part">
+      <button class="backToHome" @click="return_to_main_page">返回首页</button>
+      <div class="t" style="font-size: 35px;text-align: center;width: 60%;margin-left: 20%;color: #5E5D5D">写给用户</div>
+      <div class="content">我们在日常生活中经常有图片处理的需要，比如更换证件照背景或者自己p图时想要抠下来一些部分，可是很多人并不会使用PS等大型软件，且软件的安装也很麻烦。我们的系统基于图像前景分割呈现一个快捷抠图网站。用户从文件夹选择需要抠的图片，系统给出相应的与背景分离的图片，也可以更换图片背景，选择证件照底色，一键更换证件照背景，或者改变图像风格。
+      </div>
+    </div>
+
+    <div class="about1"></div>
+    <div class="about2"></div>
+    <div class="about3"></div>
+    <div class="about4"></div>
+  </div>
+
 </template>
 
-<!--关于我们-->
-<div class="about_us">
 
-</div>
 <script>
 import request from "@/utils/request";
 import request_of_jason from "@/utils/request_of_jason";
@@ -271,7 +284,11 @@ export default {
       this.result_of_process=false;
       this.url_of_identity_process_result='';
       request_of_jason.post('/delete',{operation:this.filename_of_pic_in_back})
-    }
+    },
+    process_about_us(){
+      this.model='about_us'
+    },
+
   }
 }
 
@@ -316,6 +333,32 @@ export default {
   font-weight: bold;
   color: white;
 }
+.about{
+  top:-8px;
+  margin-left:670px;
+  height: 50px;
+  font-size: 27px;
+  background-color: rgb(250,250,250);
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  border: none;
+  outline: none;
+  position: static;
+}
+.about:hover{
+  background-color:#cccccc ;
+}
+.about:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.content{
+  z-index: 1000;
+  width: 60%;
+  margin-left: 20%;
+  font-size: 30px;
+  font-family: "Microsoft YaHei";
+  color: #5E5D5D;
+}
+
 
 /*上面整个组件*/
 .up{
@@ -513,7 +556,7 @@ export default {
   padding-top:70px;
   font-weight: bold;
   font-size: 20px;
-  color: #b5eeff;
+  color: #837F7F;
 }
 .download_btn{
   margin-left: 77%;
@@ -562,7 +605,8 @@ export default {
   position: absolute;
   width: 79%;
   height: 200px;
-  margin-left: 10%;
+  top: 540px;
+  left: 10.5%;
   background-color: #F7F9FB;
 }
 
@@ -650,8 +694,8 @@ export default {
 .down{
   width: 79%;
   height: 400px;
-  margin-left: 10%;
-  margin-top: 200px;
+  left: 10.5%;
+  top: 740px;
   position: absolute;
   background-size: 100% 100%;
   background-color: #F7F9FB;
@@ -681,7 +725,7 @@ export default {
   height: 150px;
   background-size: 100% 100%;
   position: absolute;
-  margin-left: 6%;
+  left: 6%;
   margin-top: 830px;
   z-index:999;
   background-image: url('../assets/10.png');
@@ -716,8 +760,8 @@ export default {
   width: 79%;
   height: 800px;
   position: absolute;
-  margin-left: 10%;
-  margin-top: 600px;
+  left: 10.5%;
+  top: 1140px;
   background-color:white;
 }
 
@@ -1042,5 +1086,45 @@ export default {
 #top_back:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
+/*关于界面*/
+.about1{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 20%;
+  top: 850px;
+  z-index:999;
+  background-image: url('../assets/35.png');
+}
+.about2{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 35%;
+  top: 850px;
+  z-index:999;
+  background-image: url('../assets/36.png');
+}
+.about3{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 50%;
+  top: 850px;
+  z-index:999;
+  background-image: url('../assets/37.png');
+}
+.about4{
+  width: 150px;
+  height: 220px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 65%;
+  top: 850px;
+  z-index:999;
+  background-image: url('../assets/38.png');
+}
 </style>

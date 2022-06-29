@@ -42,12 +42,11 @@
   <div v-if="model=='identity_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <div class="block-one">
-      </div>
-      <div class="block-two"></div>
-      <div class="select-BGColor" v-cloak></div>
       <!--      图片位置-->
-
+      <div class="block-one"></div>
+      <div class="block-two"></div>
+      <div class="choose_color">选择颜色</div>
+      <div class="select-BGColor" v-cloak></div>
       <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
     </div>
     <div class="zj1"></div>
@@ -126,8 +125,18 @@
 <!--  背景图-->
   <div class="background"></div>
 
+<!--回到顶部按钮-->
+  <a id="top_back" href="#top" target="_self">
+    <div>
+      <img src="../assets/34.png">
+    </div>
+  </a>
 </template>
 
+<!--关于我们-->
+<div class="about_us">
+
+</div>
 <script>
 import request from "@/utils/request";
 import request_of_jason from "@/utils/request_of_jason";
@@ -450,7 +459,7 @@ export default {
 }
 
 .block-one{
-  width: 25%;
+  width: 214px;
   height: 300px;
   background-color: white;
   position: absolute;
@@ -460,7 +469,7 @@ export default {
 }
 
 .block-two{
-  width: 25%;
+  width: 214px;
   height: 300px;
   background-color: white;
   position: absolute;
@@ -522,6 +531,14 @@ export default {
 .download_btn:hover{
   color: gainsboro;
   cursor: pointer;
+}
+.choose_color{
+  width: 150px;
+  height: 110px;
+  background-color: white;
+  position: absolute;
+  margin-top: 90px;
+  margin-left: 76%;
 }
 /*证件照模块*/
 .change_style_btn{
@@ -1008,4 +1025,22 @@ export default {
   margin-top: 20px;
   margin-left: 35%;
 }
+
+#top_back{
+  width:80px;
+  position:fixed;
+  right:20px;
+  bottom:20px;
+}
+#top_back img{
+  width:100%;
+}
+#top_back:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+#top_back:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+
 </style>

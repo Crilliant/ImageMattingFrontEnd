@@ -27,8 +27,8 @@
     <div class="blockMain">
       <!--      图片位置-->
       <div class="block-three">
-        <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
-        <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="identity_result_img" :src="url_normal_process_result" value='custom'/>
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
 <!--      装饰模块-->
@@ -58,26 +58,22 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-four">
-        <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
-        <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="normal_process_result_in_bg" value="custom" :src="url_normal_process_result">
       </div>
-      <div class="block-five"></div>
+      <div class="block-five">
+        <img :src="url_of_bg_img_from_back" id="result_of_change_bg_back_img">
+        <img :src="url_normal_process_result" id="result_of_change_bg_person">
+      </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
-      <div>
-        <button class="g1"></button>
-        <button class="g2"></button>
-        <button class="g3"></button>
-        <button class="g4"></button>
-        <button class="g5"></button>
+      <div id="bgGroup">
+        <img :src=bg_option[0] @click="change_bg(0)" class="g1">
+        <img :src=bg_option[1] @click="change_bg(1)" class="g2">
+        <img :src=bg_option[2] @click="change_bg(2)" class="g3">
+        <img :src=bg_option[3] @click="change_bg(3)" class="g4">
+        <img :src=bg_option[4] @click="change_bg(3)" class="g5">
       </div>
-
-    </div>
-    <div id="bgGroup">
-      <img :src=bg_option[0] @click="change_bg(0)">
-      <img :src=bg_option[1] @click="change_bg(1)">
-      <img :src=bg_option[2] @click="change_bg(2)">
-      <img :src=bg_option[3] @click="change_bg(3)">
     </div>
     <div class="bg1"></div>
     <div class="bg2"></div>
@@ -300,41 +296,15 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
-      this.url_of_identity_process_result='';
-      request_of_jason.post('/delete',{operation:this.filename_of_pic_in_back})
+      this.url_normal_process_result='';
     }
   }
 }
 
 </script>
 <style>
-#bgGroup{
-  border: #5E5D5D solid 5px;
-}
-#result_of_change_bg_back_img{
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-  position: absolute;
-  height: 300px;
-  z-index: 10;
-}
-#result_of_change_bg_person{
-  max-height: 100%;
-  max-width: 100%;
-  position: absolute;
-  object-fit: contain;
-  height: 300px;
-  z-index: 60;
-}
-#bgGroup img{
-  float: left;
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-  height: 300px;
-  cursor: pointer;
-}
+
+
 #change_bg_result_img_original{
   max-height: 100%;
   max-width: 100%;
@@ -477,7 +447,46 @@ export default {
   background-size: 100% 100%;
   margin-left: 10%;
 }
+#normal_process_result_in_bg{
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 180px;
+}
+#result_of_change_bg_back_img{
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  position: absolute;
+  max-height: 360px;
+  z-index: 10;
+}
+#result_of_change_bg_person{
+  max-height: 100%;
+  max-width: 100%;
+  position: absolute;
+  object-fit: contain;
+  max-height: 300px;
+  z-index: 60;
+}
+.block-four{
+  width: 15%;
+  height: 180px;
+  background-color: white;
+  position: absolute;
+  margin-top: 40px;
+  margin-left: 10%;
+  text-align: center;
+}
 
+.block-five{
+  width: 40%;
+  height: 360px;
+  background-color: white;
+  position: absolute;
+  margin-top: 20px;
+  margin-left: 33%;
+}
 .identity_part{
   width: 80%;
   height: 490px;
@@ -1055,23 +1064,5 @@ export default {
 }
 .g5:active{
   box-shadow: 0px 0px 10px #888888;
-}
-.block-four{
-  width: 15%;
-  height: 180px;
-  background-color: white;
-  position: absolute;
-  margin-top: 40px;
-  margin-left: 10%;
-  text-align: center;
-}
-
-.block-five{
-  width: 30%;
-  height: 360px;
-  background-color: white;
-  position: absolute;
-  margin-top: 20px;
-  margin-left: 35%;
 }
 </style>

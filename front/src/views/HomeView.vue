@@ -29,6 +29,7 @@
     <div class="blockMain">
       <!--      图片位置-->
       <div class="block-three">
+        <div class="load1" ></div>
         <div class="waiting_info" v-if="url_of_identity_process_result==''">图片加载中...</div>
         <img id="identity_result_img" :src="url_of_identity_process_result" value='custom'/>
       </div>
@@ -59,6 +60,7 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-four">
+        <div class="load2" ></div>
         <div class="waiting_info" v-if="url_of_changebg_process_result==''">图片加载中...</div>
         <img id="changebg_result_img" value="custom" :src="url_of_changebg_process_result">
       </div>
@@ -294,6 +296,24 @@ export default {
 
 </script>
 <style>
+.load1{
+  background-image: url("../assets/40.gif");
+  width: 70px;
+  height: 30px;
+  background-size: 100%,100%;
+  margin-left: 35%;
+  margin-top: 90px;
+  position: absolute;
+}
+.load2{
+  background-image: url("../assets/40.gif");
+  width: 70px;
+  height: 30px;
+  background-size: 100%,100%;
+  position: absolute;
+  margin-left: 30px;
+  margin-top: 80px;
+}
 #changebg_result_img{
   max-height: 100%;
   max-width: 100%;

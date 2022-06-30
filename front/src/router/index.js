@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import header from "@/views/Header";
-import Header from "@/test/Header";
+
 const routes = [
   {
     path: '/',
@@ -9,13 +9,9 @@ const routes = [
     component: HomeView
   }
   ,{
-    path: '/test',
+    path: '/t',
     name:'test',
     component: header
-  },{
-  path: '/t',
-    name: 'T',
-    component: Header
   }
 ]
 

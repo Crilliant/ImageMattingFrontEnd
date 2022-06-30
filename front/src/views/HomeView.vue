@@ -5,7 +5,7 @@
     <p style="color: black;font-family: 'Microsoft YaHei'">在线抠图</p>
   </div>
   <!--上面部分-->
-  <div class="up" v-if="model=='main'">
+  <div class="up" v-show="model=='main'">
     <div class="in1">
       <form enctype="multipart/form-data" method="post">
         <p type="primary" class="main-submit" v-if="location_of_uploaded_img==''">提交图片</p>
@@ -22,7 +22,7 @@
   </div>
 
 <!--  人物抠取模块-->
-  <div v-if="model=='person_photo'" class="person">
+  <div v-show="model=='person_photo'" class="person">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <!--      图片位置-->
@@ -38,7 +38,7 @@
     </div>
   </div>
 <!--  证件照模块-->
-  <div v-if="model=='identity_photo'" class="identity_part">
+  <div v-show="model=='identity_photo'" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
@@ -54,25 +54,82 @@
     <div class="zj3"></div>
   </div>
 <!--  换背景模块-->
-  <div v-if="model=='changed_background_photo'" class="changebg_part">
+  <div v-show="model=='changed_background_photo'" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-four">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
         <img id="normal_process_result_in_bg" value="custom" :src="url_normal_process_result">
       </div>
-      <div class="block-five">
-        <img :src="url_of_bg_img_from_back" id="result_of_change_bg_back_img">
-        <img :src="url_normal_process_result" id="result_of_change_bg_person">
+      <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
+      <input type="file" id="changeImg" style="display: none"/>
+      <button @click="onBtn('load_bg_img_btn')" type="primary"  class="change_style_btn">选择图片</button>
+<!--      <button @click="onBtn('upload_images_btn')" >选择图片</button>-->
+      <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
+      <div id="width_height_tools">
+        <button @click="changeBlock('addWidth')">addWidth</button>
+        <button @click="changeBlock('reduceWidth')">reduceWidth</button>
+        <button @click="changeBlock('addHeight')">addHeight</button>
+        <button @click="changeBlock('reduceHeight')">reduceHeight</button>
       </div>
-      <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-      <button type="primary"  class="change_style_btn">添加背景</button>
+      <div id="block-five" :style="{left:+boxLeft+'px',top:+boxTop+'px'}">
+        <img
+            @mousedown="imgCheck('imgOne')"
+            @click="imgOver('imgOne')"
+            @dblclick="onBtn('changeImg')"
+            :src="url_of_bg_img_from_back"
+            id="imgOne"
+            :style="{transform:'scale('+params.zoomVal_1+')'}"
+            @mousewheel="bagimg($event,'imgOne')" @mousewheel.prevent
+            @click.prevent
+            class="imgOne"
+        />
+        <img
+            @mousedown="imgCheck('imgTwo')"
+            @click="imgOver('imgTwo')"
+            @dblclick="onBtn('changeImg')"
+            :src="src"
+            id="imgTwo"
+            :style="{transform:'scale('+params.zoomVal_2+')'}"
+            @mousewheel="bagimg($event,'imgTwo')" @mousewheel.prevent
+            @click.prevent
+            class="imgTwo"
+        />
+        <img
+            @mousedown="imgCheck('imgThree')"
+            @click="imgOver('imgThree')"
+            @dblclick="onBtn('changeImg')"
+            :src="src"
+            id="imgThree"
+            :style="{transform:'scale('+params.zoomVal_3+')'}"
+            @mousewheel="bagimg($event,'imgThree')" @mousewheel.prevent
+            @click.prevent
+            class="imgThree"
+        />
+        <img
+            @mousedown="imgCheck('imgFour')"
+            @click="imgOver('imgFour')"
+            @dblclick="onBtn('changeImg')"
+            :src="src"
+            id="imgFour"
+            :style="{transform:'scale('+params.zoomVal_4+')'}"
+            @mousewheel="bagimg($event,'imgFour')" @mousewheel.prevent
+            @click.prevent
+            class="imgFour"
+        />
+        <img
+            @mousedown="imgCheck('result_of_change_bg_person')"
+            :src="url_normal_process_result"
+            id="result_of_change_bg_person"
+            @mousewheel="bagimg($event,'result_of_change_bg_person')" @mousewheel.prevent
+        />
+      </div>
       <div id="bgGroup">
         <img :src=bg_option[0] @click="change_bg(0)" class="g1">
         <img :src=bg_option[1] @click="change_bg(1)" class="g2">
         <img :src=bg_option[2] @click="change_bg(2)" class="g3">
         <img :src=bg_option[3] @click="change_bg(3)" class="g4">
-        <img :src=bg_option[4] @click="change_bg(3)" class="g5">
+        <img :src=bg_option[4] @click="change_bg(4)" class="g5">
       </div>
     </div>
     <div class="bg1"></div>
@@ -81,7 +138,7 @@
     <div class="bg4"></div>
   </div>
   <!--  换风格模块-->
-  <div v-if="model=='changed_style_photo'" class="changebg_part">
+  <div v-show="model=='changed_style_photo'" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one"></div>
@@ -132,6 +189,7 @@
 <script>
 import request from "@/utils/request";
 import request_of_jason from "@/utils/request_of_jason";
+import html2canvas from "html2canvas";
 
 export default {
   name: 'HomeView',
@@ -145,10 +203,43 @@ export default {
       filename_of_pic_in_back:"",//后台存储文件名
       result_of_process:false,
       timer:null,
+      //用于更换背景模块
       url_of_bg_img_from_back:'',//选中的后台提供背景图片url
-      bg_option:[]
+      bg_option:[],
+      src:'',
+      multiples: 1,
+      isClick:false,
+      isClickOnly:true,
+      isDblclick:true,
+      params:{
+        zoomVal_1:1,
+        zoomVal_2:1,
+        zoomVal_3:1,
+        zoomVal_4:1,
+        left: 0,
+        top: 0,
+        currentX: 0,
+        currentY: 0,
+        flag: false
+      },
+      //画板长款调整变量
+      boxLeft:0,
+      boxTop:0,
+      boxHeight:320,
+      boxWidth:420,
+      wheel:true,//全局滚轮标签
+      wheelChange:0,//滚轮变化值
     }
-  },watch:{
+  },
+  mounted() {
+    this.imgShow()
+    document.addEventListener("mousewheel", this.addWheel)
+    this.startDrag(document.getElementById("imgOne"), document.getElementById("imgOne"))
+    this.startDrag(document.getElementById("imgTwo"), document.getElementById("imgTwo"))
+    this.startDrag(document.getElementById("imgThree"), document.getElementById("imgThree"))
+    this.startDrag(document.getElementById("imgFour"), document.getElementById("imgFour"))
+  },
+  watch:{
   },
   methods:{
     // 加载图片并预览
@@ -234,8 +325,203 @@ export default {
     change_bg(order_of_bg_img){
       this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
     },
+    imgOver(String){
+      if(this.isClick){
+        this.isDblclick=true
+        setTimeout(() => {
+          if(this.isClickOnly){
+            this.zIndex("imgOne",String)
+            this.zIndex("imgTwo",String)
+            this.zIndex("imgThree",String)
+            this.zIndex("imgFour",String)
+            const imgChecks = document.getElementById(String);
+            imgChecks.style.zIndex=5
+          }
+        }, 200)
+        setTimeout(() => {
+          this.isDblclick = false
+        }, 300)
+      }
+    },
+    onBtn(String){
+      if(String!="changeImg"){
+        document.getElementById(String).click()
+      }else if(this.isDblclick==true){
+        document.getElementById(String).click()
+        this.isClickOnly=false
+      }
+    },
+    imgShow(){
+      const filename=document.getElementById("load_bg_img_btn")
+      const imgTwo = document.getElementById("imgTwo");
+      const imgOne = document.getElementById("imgOne");
+      const imgThree = document.getElementById("imgThree");
+      const imgFour = document.getElementById("imgFour");
+      filename.onchange=function () {
+        if(filename.files[0]!=null){
+          imgOne.src = URL.createObjectURL(this.files[0]);
+        }
+        if(filename.files[1]!=null){
+          imgTwo.src = URL.createObjectURL(this.files[1]);
+        }
+        if(filename.files[2]!=null){
+          imgThree.src = URL.createObjectURL(this.files[2]);
+        }
+        if(filename.files[3]!=null){
+          imgFour.src = URL.createObjectURL(this.files[3]);
+        }
+      }
+    },
+    zIndex(String,next){
+      const imgChecks = document.getElementById(String);
+      const imgCheckNext=document.getElementById(next);
+      if(imgChecks.style.zIndex>imgCheckNext.style.zIndex){
+        imgChecks.style.zIndex-=1
+      }
+    },
+    imgCheck(String){
+      this.startDrag(document.getElementById(String), document.getElementById(String))
+      const filename2=document.getElementById("changeImg")
+      const imgChecks = document.getElementById(String);
+      // imgChecks.style.zIndex=4
+      this.isClick=true
+      setTimeout(() => {
+        this.isClick = false
+      }, 300)
+      filename2.onchange=function () {
+        imgChecks.src = URL.createObjectURL(this.files[0]);
+      }
+    },
+    download_result_of_change_bg(){
+      html2canvas(document.getElementById("block-five"),{useCORS:true}).then(function (canvas) {
+        const image=canvas.toDataURL("image/png")
+        let $a=document.createElement("a")
+        $a.setAttribute("href",image)
+        $a.setAttribute("download","下载")
+        $a.click()
+      })
+    },
+    // download_Result() {
+    //   fetch(this.url_normal_process_result).then(res=>res.blob()).then(res=>{
+    //     const bqa = document.createElement("a");
+    //     bqa.setAttribute("download", this.filename_of_pic_in_back);
+    //     bqa.setAttribute("href", URL.createObjectURL(res));
+    //     bqa.click();
+    //   })
+    // },
+    // 滚轮事件
+    addWheel(){
+      if(this.wheel==true){
+        if(event.wheelDelta>0&&this.wheelChange!=0){
+          this.wheelChange-=160
+        }else if(event.wheelDelta<0){
+          this.wheelChange+=160
+        }
+      }
+    },
+    bagimg(e,String) {
+      const h = document.getElementById(String)
+      if(String=="imgOne"){
+        this.params.zoomVal_1 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_1 <= 0.2) {
+          this.params.zoomVal_1 = 0.2;
+        }
+        this.wheel=false
+      }
+      if(String=="imgTwo"){
+        this.params.zoomVal_2 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_2 <= 0.2) {
+          this.params.zoomVal_2 = 0.2;
+        }
+        this.wheel=false
+      }
+      if(String=="imgThree"){
+        this.params.zoomVal_3 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_3 <= 0.2) {
+          this.params.zoomVal_3 = 0.2;
+        }
+        this.wheel=false
+      }
+      if(String=="imgFour"){
+        this.params.zoomVal_4 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_4 <= 0.2) {
+          this.params.zoomVal_4 = 0.2;
+        }
+        this.wheel=false
+      }
+      setTimeout(() => {
+        this.wheel=true
+      }, 300)
+    },
+    getImgCss(e, key) {
+      return e.currentStyle ? e.currentStyle[key] : document.defaultView.getComputedStyle(e, false)[key];
+    },
+    startDrag(bar, target, callback) {
+      let that = this
+      if (that.getImgCss(target, "left") !== "auto") {
+        that.params.left = that.getImgCss(target, "left");
+      }
+      if (that.getImgCss(target, "top") !== "auto") {
+        that.params.top = that.getImgCss(target, "top");
+      }
+      bar.onmousedown = function(event) {
+        that.params.flag = true;
+        if (!event) {
+          event = window.event;
+          bar.onselectstart = function() {
+            return false;
+          }
+        }
+        let e = event;
+        that.params.currentX = e.clientX;
+        that.params.currentY = e.clientY;
+      };
+      document.onmouseup = function() {
+        that.params.flag = false;
+        if (that.getImgCss(target, "left") !== "auto") {
+          that.params.left = that.getImgCss(target, "left");
 
-
+        }
+        if (that.getImgCss(target, "top") !== "auto") {
+          that.params.top = that.getImgCss(target, "top");
+        }
+      };
+      document.onmousemove = function(event) {
+        let e = event ? event : window.event;
+        if (that.params.flag) {
+          let nowX = e.clientX,
+              nowY = e.clientY;
+          if(nowX>that.boxLeft-5+that.boxWidth+580||nowX<that.boxLeft+5+580||nowY<that.boxTop-that.wheelChange+5+145||nowY>that.boxTop-that.wheelChange+that.boxHeight-5+145){
+            that.params.flag=false
+          }
+          let disX = nowX - that.params.currentX,
+              disY = nowY - that.params.currentY;
+          target.style.left = parseInt(that.params.left) + disX + "px";
+          target.style.top = parseInt(that.params.top) + disY + "px";
+          if (event.preventDefault) {
+            event.preventDefault();
+          }
+          return false;
+        }
+      }
+    },
+    changeBlock(String){
+      if(String=="addWidth"&&this.boxWidth<460){
+        this.boxWidth+=30
+      }
+      if(String=="reduceWidth"&&this.boxWidth>=100){
+        this.boxWidth-=30
+      }
+      if(String=="addHeight"&&this.boxHeight<360){
+        this.boxHeight+=20
+      }
+      if(String=="reduceHeight"&&this.boxHeight>=100){
+        this.boxHeight-=20
+      }
+      const bigImg=document.getElementById("block-five")
+      bigImg.style.height=this.boxHeight+"px"
+      bigImg.style.width=this.boxWidth+"px"
+    },
 
 
 
@@ -453,14 +739,6 @@ export default {
   object-fit: contain;
   height: 180px;
 }
-#result_of_change_bg_back_img{
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-  position: absolute;
-  max-height: 360px;
-  z-index: 10;
-}
 #result_of_change_bg_person{
   max-height: 100%;
   max-width: 100%;
@@ -478,14 +756,77 @@ export default {
   margin-left: 10%;
   text-align: center;
 }
-
-.block-five{
-  width: 40%;
-  height: 360px;
+#block-five{
+  position:absolute;
+  overflow: hidden;
+  width: 420px;
+  height: 320px;
   background-color: white;
-  position: absolute;
   margin-top: 20px;
   margin-left: 33%;
+}
+.imgOne{
+  position: absolute;
+  margin-left: 0%;
+  width: auto;
+  height: 50%;
+  z-index: 1;
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+
+}
+.imgTwo{
+  position: absolute;
+  margin-left: 50%;
+  width: auto;
+  height: 50%;
+  z-index: 2;
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+}
+.imgThree{
+  position: absolute;
+  margin-left: 0%;
+  margin-top: 50%;
+  width: auto;
+  height: 50%;
+  z-index: 3;
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+}
+.imgFour{
+  position: absolute;
+  margin-left: 50%;
+  margin-top: 50%;
+  width: auto;
+  height: 50%;
+  z-index: 4;
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+}
+#bgGroup{
+  padding-top: 70px;
+}
+#download_btn_in_change_bg{
+  margin-left: 77%;
+  margin-top: 20px;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 30px;
+  color: white;
+  border-radius: 5px;
+  background-color: #0099FF;
+  padding: 8px;
+  border: none;
+  outline: none;
+}
+#width_height_tools{
+  padding-left: 870px;
+  padding-top: 100px;
+  position: absolute;
 }
 .identity_part{
   width: 80%;
@@ -549,17 +890,6 @@ export default {
   margin-top: 130px;
 }
 
-.download1{
-  margin-left: 77%;
-  margin-top: 70px;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 25px;
-  color: white;
-  border-radius: 5px;
-  background-color: #0099FF;/*改了颜色*/
-  border: none;
-  outline: none;
-}
 /*证件照模块*/
 .block-three{
   width: 30%;

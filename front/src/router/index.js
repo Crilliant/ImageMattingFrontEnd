@@ -1,18 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import header from "@/views/Header";
-import test from "@/views/test";
+import introduction from "@/views/Introduction";
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    meta: {
+      title: '猫之使徒在线抠图'
+    }
   }
   ,{
-    path: '/t',
-    name:'test',
-    component: test
-  }
+    path: '/intro',
+    name:'intro',
+    component: introduction,
+    meta:{
+      title:'关于我们',
+    }
+    }
 ]
 
 const router = createRouter({

@@ -2,7 +2,8 @@
 <!--  导航栏-->
   <div class="daohang">
     <div class="logo"></div>
-    <p style="color: black;font-family: 'Microsoft YaHei'">在线抠图</p>
+    <p id="page_title">在线抠图</p>
+    <p id="about_us" @click="this.$router.replace('/intro')">关于我们</p>
   </div>
   <!--上面部分-->
   <div class="up" v-show="model=='main'">
@@ -82,21 +83,25 @@
       </div>
       <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
       <input type="file" id="changeImg" style="display: none"/>
-      <button @click="onBtn('load_bg_img_btn')" type="primary"  class="change_style_btn">选择图片</button>
-      <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
       <div id="width_height_tools">
-        <button @click="changeBlock('addWidth')" style="border: none;border-radius: 3px;width: 75px;background-color: #99ccff">addWidth</button>
-        <button @click="changeBlock('reduceWidth')" style="border: none;border-radius: 3px;width: 90px;margin-left: 5px;background-color: #99ccff">reduceWidth</button>
-        <button @click="changeBlock('addHeight')" style="border: none;border-radius: 3px;width: 75px;background-color: #99ccff">addHeight</button>
-        <button @click="changeBlock('reduceHeight')" style="border: none;border-radius: 3px;width: 90px;margin-left: 5px;background-color: #99ccff">reduceHeight</button>
-<!--        <div><span>请输入你要添加的文字</span></div>-->
+        <button @click="changeBlock('addWidth')" id="add_width">相框加宽</button>
+        <button @click="changeBlock('reduceWidth')" id="reduce_width">相框缩窄</button>
+        <button @click="changeBlock('addHeight')" id="add_height">相框加高</button>
+        <button @click="changeBlock('reduceHeight')" id="reduce_height">相框减矮</button>
+        <!--        <div><span>请输入你要添加的文字</span></div>-->
         <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="message" @change="print()" style="margin-top: 10px">
+        <p>文字调色</p>
         <p>
-          red:<input type="range" max="255" min="0" v-model="word_red" class="m-select"><br>
-          green:<input type="range" max="255" min="0" v-model="word_green" class="m-select"><br>
-          blue:<input type="range" max="255" min="0" v-model="word_blue" class="m-select"><br>
+          红:<input type="range" max="255" min="0" v-model="word_red" class="m-select"><br>
+          绿:<input type="range" max="255" min="0" v-model="word_green" class="m-select"><br>
+          蓝:<input type="range" max="255" min="0" v-model="word_blue" class="m-select"><br>
+          文字旋转:<input type="range" max="360" min="-360" v-model="word_rotate" >
         </p>
-        <input type="range" max="360" min="-360" v-model="word_rotate" >
+
+      </div>
+      <div id="func_btn_in_bg">
+        <button @click="onBtn('load_bg_img_btn')" type="primary"  id="change_background_btn">选择图片</button>
+        <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
       </div>
       <div id="block-five" :style="{left:+boxLeft+'px',top:+boxTop+'px'}">
         <img
@@ -152,7 +157,7 @@
             @mousewheel="bagimg($event,'result_of_change_bg_person')" @mousewheel.prevent
         />
         <span class="mes" id="m"
-              :style="{color: 'rgb('+word_red+','+word_green+','+word_blue+')',fontSize:fontSizes+'px',transform:'rotate('+word_rotate+'deg'+') scale('+params.zoomVal_7+')'}"
+              :style="{color: 'rgb('+word_red+','+word_green+','+word_blue+')',fontSize:fontSizes+'px',transform:'rotate('+word_rotate+'deg'+') scale('+params.zoomVal_7+')',cursor:'move'}"
               @mousedown="imgCheck('m')"
               @mousewheel="bagimg($event,'m')"
               @mousewheel.prevent
@@ -814,10 +819,6 @@ export default {
   z-index:999;
   background-color: rgb(250,250,250);
   margin-left: 10%;
-  /*border-left: 30px solid;*/
-  /*border-image-source: linear-gradient(to right, cornflowerblue, #bedeff);*/
-  /*border-image-slice: 1;*/
-  /*border-image-width: 30px;*/
   box-shadow: 0px 5px  rgba(0, 0, 0, .2);
 }
 .logo{
@@ -831,15 +832,25 @@ export default {
   z-index:999;
   float: left;
 }
-.daohang p{
+#page_title{
   float: left;
   padding-left: 28px;
   margin-top: 12px;
   font-size: 28px;
   font-weight: bold;
-  color: white;
+  color: black;
+  font-family: 'Microsoft YaHei'
 }
-
+#about_us{
+  float: right;
+  padding-right: 5px;
+  padding-top: 6px;
+  font-size: 18px;
+}
+#about_us:hover{
+  color: #837F7F;
+  cursor: pointer;
+}
 /*上面整个组件*/
 .up{
   width: 80%;
@@ -1022,25 +1033,10 @@ export default {
   z-index: 100;
 }
 #bgGroup{
-  padding-top: 70px;
+  top: -160px;
+  position: relative;
 }
-#download_btn_in_change_bg{
-  margin-left: 77%;
-  margin-top: 20px;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  font-size: 30px;
-  color: white;
-  border-radius: 5px;
-  background-color: #0099FF;
-  padding: 8px;
-  border: none;
-  outline: none;
-}
-#width_height_tools{
-  left: 700px;
-  padding-top: 20px;
-  position: absolute;
-}
+
 .identity_part{
   width: 80%;
   height: 490px;
@@ -1232,7 +1228,38 @@ export default {
 .person_process_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
+#func_btn_in_bg{
+  margin-left: 860px;
+  margin-top: 325px;
+  width: 200px;
+  height: 50px;
+}
+#download_btn_in_change_bg{
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 20px;
+  color: white;
+  border-radius: 5px;
+  background-color: #0099FF;
+  padding: 8px;
+  border: none;
+  outline: none;
+  float: right;
+}
+#change_background_btn{
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 20px;
+  color: white;
+  border-radius: 5px;
+  background-color: #0099FF;
+  padding: 8px;
+  border: none;
+  outline: none;
+  float: left;
+}
+#change_background_btn:hover{
+  color: whitesmoke;
+  cursor: pointer;
+}
 .change_bg_button{
   width: 150px;
   height: 150px;
@@ -1249,8 +1276,49 @@ export default {
   box-shadow: 0px 0px 10px #5E5D5D;
   cursor: pointer;
 }
-.change_bg_button:active{
+.change_bg_button:active {
   box-shadow: 0px 0px 10px #888888;
+}
+#width_height_tools{
+  left: 860px;
+  padding-top: 80px;
+  position: absolute;
+}
+#add_width{
+  border: none;
+  border-radius: 3px;
+  width: 100px;
+  font-size: 20px;
+  color: white;
+  background-color: #99ccff
+}
+#reduce_width{
+  border: none;
+  border-radius: 3px;
+  width: 100px;
+  margin-left: 5px;
+  color: white;
+  font-size: 20px;
+  background-color: #99ccff
+}
+#add_height{
+  border: none;
+  border-radius: 3px;
+  width: 100px;
+  color: white;
+  font-size: 20px;
+  background-color: #99ccff;
+  margin-top: 8px;
+}
+#reduce_height{
+  border: none;
+  border-radius: 3px;
+  width: 100px;
+  color: white;
+  margin-left: 5px;
+  font-size: 20px;
+  background-color: #99ccff;
+  margin-top: 8px;
 }
 .change_style_button{
   width: 150px;
@@ -1285,7 +1353,7 @@ export default {
   height: 300px;
 }
 #style_tool_box{
-  padding-left: 610px;
+  padding-left: 725px;
 }
 /*下面部分*/
 .down{

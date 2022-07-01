@@ -42,12 +42,27 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img :src='url_normal_process_result' class="photo_of_user_in_identity">
       </div>
-      <div class="block-two"></div>
-      <div class="select-BGColor" v-cloak></div>
+      <div id="block-two" :style="{background:'rgb('+red+','+green+','+blue+')'}">
+        <img
+            id="identity_result_person"
+            :src='url_normal_process_result'
+            @mousedown="drag_person('identity_result_person')"
+            :style="{transform:'scale('+params.zoomVal_6+')'}"
+            @mousewheel="bagimg($event,'identity_result_person')" @mousewheel.prevent
+        />
+      </div>
+      <div class="select-BGColor" v-cloak>
+        <p>
+          red:<input type="range" max="255" min="0" v-model="red" class="picker-select"><br>
+          green:<input type="range" max="255" min="0" v-model="green" class="picker-select"><br>
+          blue:<input type="range" max="255" min="0" v-model="blue" class="picker-select"><br>
+        </p>
+      </div>
       <!--      图片位置-->
-
-      <button type="primary" class="download_btn" @click="download_Result">一键下载</button>
+      <button type="primary" class="download_btn" @click="download_Result_of_identity_process">一键下载</button>
     </div>
     <div class="zj1"></div>
     <div class="zj2"></div>
@@ -64,7 +79,6 @@
       <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
       <input type="file" id="changeImg" style="display: none"/>
       <button @click="onBtn('load_bg_img_btn')" type="primary"  class="change_style_btn">选择图片</button>
-<!--      <button @click="onBtn('upload_images_btn')" >选择图片</button>-->
       <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
       <div id="width_height_tools">
         <button @click="changeBlock('addWidth')">addWidth</button>
@@ -119,8 +133,10 @@
         />
         <img
             @mousedown="imgCheck('result_of_change_bg_person')"
+            @dblclick="onBtn('changeImg')"
             :src="url_normal_process_result"
             id="result_of_change_bg_person"
+            :style="{transform:'scale('+params.zoomVal_5+')'}"
             @mousewheel="bagimg($event,'result_of_change_bg_person')" @mousewheel.prevent
         />
       </div>
@@ -141,7 +157,10 @@
   <div v-show="model=='changed_style_photo'" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <div class="block-one"></div>
+      <div class="block-one">
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="special_process_result_in_bg" value="custom" :src="url_normal_process_result">
+      </div>
       <div class="block-two"></div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
       <button type="primary"  class="change_style_btn">添加背景</button>
@@ -203,6 +222,7 @@ export default {
       filename_of_pic_in_back:"",//后台存储文件名
       result_of_process:false,
       timer:null,
+      process_page:0,
       //用于更换背景模块
       url_of_bg_img_from_back:'',//选中的后台提供背景图片url
       bg_option:[],
@@ -216,6 +236,8 @@ export default {
         zoomVal_2:1,
         zoomVal_3:1,
         zoomVal_4:1,
+        zoomVal_5:1,
+        zoomVal_6:1,
         left: 0,
         top: 0,
         currentX: 0,
@@ -227,17 +249,20 @@ export default {
       boxTop:0,
       boxHeight:320,
       boxWidth:420,
-      wheel:true,//全局滚轮标签
       wheelChange:0,//滚轮变化值
+      //证件照背景色
+      red:255,
+      green:255,
+      blue:255,
+      //图片删除
+      imgChecked:"",
+      deleteImgOne:false,
+      deleteImgTwo:0,
     }
   },
   mounted() {
     this.imgShow()
-    document.addEventListener("mousewheel", this.addWheel)
-    this.startDrag(document.getElementById("imgOne"), document.getElementById("imgOne"))
-    this.startDrag(document.getElementById("imgTwo"), document.getElementById("imgTwo"))
-    this.startDrag(document.getElementById("imgThree"), document.getElementById("imgThree"))
-    this.startDrag(document.getElementById("imgFour"), document.getElementById("imgFour"))
+    document.addEventListener("scroll", this.addScroll)
   },
   watch:{
   },
@@ -281,6 +306,12 @@ export default {
         if(res.status ==='wait'){
           this.result_of_process = false
         }else {
+          // const reader = new FileReader()
+          // reader.readAsDataURL(e.target.files[0])
+          // reader.onload = () => {
+          //   const _base64 = reader.result
+          //   this.location_of_uploaded_img = _base64 //将文件转读为url并通过_base64赋值给图片的src，实现图片预览
+          // }
           this.url_normal_process_result = res.url
           this.result_of_process = true
         }
@@ -301,11 +332,9 @@ export default {
       this.timer=null;
     },
     process_change_background(){
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.destroyTimer();
       this.model='changed_background_photo';
-      request_of_jason.post('/api/background/load').then(res=>{
-        console.log(res);
-        this.bg_option = res.urls;
-      });
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
@@ -319,6 +348,10 @@ export default {
           var r=confirm("上传有误");
           return
         };
+      })
+      request_of_jason.post('api/background/load').then(res=>{
+        this.bg_option = res.urls
+        console.log(res)
       })
       this.set_Timer()
     },
@@ -383,7 +416,11 @@ export default {
       this.startDrag(document.getElementById(String), document.getElementById(String))
       const filename2=document.getElementById("changeImg")
       const imgChecks = document.getElementById(String);
-      // imgChecks.style.zIndex=4
+      document.removeEventListener("keydown",this.deleteImg)
+      this.deleteImgOne=true
+      this.deleteImgTwo+=1
+      this.imgChecked=String
+      document.addEventListener("keydown",this.deleteImg)
       this.isClick=true
       setTimeout(() => {
         this.isClick = false
@@ -391,10 +428,17 @@ export default {
       filename2.onchange=function () {
         imgChecks.src = URL.createObjectURL(this.files[0]);
       }
+      setTimeout(() => {
+        if(this.deleteImgTwo!=0){
+          this.deleteImgTwo-=1
+        }
+      }, 5000)
     },
     download_result_of_change_bg(){
       html2canvas(document.getElementById("block-five"),{useCORS:true}).then(function (canvas) {
+        console.log(canvas)
         const image=canvas.toDataURL("image/png")
+        console.log(image)
         let $a=document.createElement("a")
         $a.setAttribute("href",image)
         $a.setAttribute("download","下载")
@@ -410,14 +454,9 @@ export default {
     //   })
     // },
     // 滚轮事件
-    addWheel(){
-      if(this.wheel==true){
-        if(event.wheelDelta>0&&this.wheelChange!=0){
-          this.wheelChange-=160
-        }else if(event.wheelDelta<0){
-          this.wheelChange+=160
-        }
-      }
+    addScroll(){
+      this.wheelChange=document.documentElement.scrollTop
+      this.deleteImgTwo=0
     },
     bagimg(e,String) {
       const h = document.getElementById(String)
@@ -446,6 +485,20 @@ export default {
         this.params.zoomVal_4 += event.wheelDelta / 1200;
         if (this.params.zoomVal_4 <= 0.2) {
           this.params.zoomVal_4 = 0.2;
+        }
+        this.wheel=false
+      }
+      if(String=="result_of_change_bg_person"){
+        this.params.zoomVal_5 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_5 <= 0.2) {
+          this.params.zoomVal_5 = 0.2;
+        }
+        this.wheel=false
+      }
+      if(String=="identity_result_person"){
+        this.params.zoomVal_6 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_6 <= 0.2) {
+          this.params.zoomVal_6 = 0.2;
         }
         this.wheel=false
       }
@@ -491,8 +544,14 @@ export default {
         if (that.params.flag) {
           let nowX = e.clientX,
               nowY = e.clientY;
-          if(nowX>that.boxLeft-5+that.boxWidth+580||nowX<that.boxLeft+5+580||nowY<that.boxTop-that.wheelChange+5+145||nowY>that.boxTop-that.wheelChange+that.boxHeight-5+145){
-            that.params.flag=false
+          if(that.imgChecked=="identity_result_person"){
+            if(nowX>924||nowX<660||nowY<170-that.wheelChange||nowY>460-that.wheelChange-5){
+              that.params.flag=false
+            }
+          }else {
+            if(nowX>that.boxLeft-5+that.boxWidth+580||nowX<that.boxLeft+5+580||nowY<that.boxTop-that.wheelChange+5+145||nowY>that.boxTop-that.wheelChange+that.boxHeight-5+145){
+              that.params.flag=false
+            }
           }
           let disX = nowX - that.params.currentX,
               disY = nowY - that.params.currentY;
@@ -522,7 +581,27 @@ export default {
       bigImg.style.height=this.boxHeight+"px"
       bigImg.style.width=this.boxWidth+"px"
     },
-
+    deleteImg(e){
+      if(e.keyCode==8&&this.deleteImgOne==true&&this.deleteImgTwo!=0){
+        const img=document.getElementById(this.imgChecked)
+        img.src=""
+        img.style.left=0+"px"
+        img.style.top=0+"px"
+        if(this.imgChecked=="imgOne"){
+          this.params.zoomVal_1=1
+        }
+        if(this.imgChecked=="imgTwo"){
+          this.params.zoomVal_2=1
+        }
+        if(this.imgChecked=="imgThree"){
+          this.params.zoomVal_3=1
+        }
+        if(this.imgChecked=="imgFour"){
+          this.params.zoomVal_4=1
+        }
+        this.deleteImgOne=false
+      }
+    },
 
 
 
@@ -532,9 +611,27 @@ export default {
 
 
     process_change_style(){
-      this.model='changed_style_photo'
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.destroyTimer();
+      this.model='changed_style_photo';
+      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+      let param = new FormData();
+      param.append('file',file,file.name)
+      request.post('/api/style/watercolor',param).then(res=>{
+        if(res.status=='success'){
+          var r=confirm("照片处理中，请稍后");
+          this.filename_of_pic_in_back = res.message
+        }else {
+          console.log(res)
+          var r=confirm("上传有误");
+          return
+        };
+      })
+      this.set_Timer()
     },
     process_person(){
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.destroyTimer();
       this.model='person_photo';
       //this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
@@ -554,11 +651,13 @@ export default {
       this.set_Timer()
     },
     process_identification(){
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.destroyTimer();
       this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
-      request.post('/api/image/identification',param).then(res=>{
+      request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           var r=confirm("照片处理中，请稍后");
           this.filename_of_pic_in_back = res.message
@@ -569,6 +668,19 @@ export default {
         };
       })
       this.set_Timer()
+    },
+    drag_person(String){
+      this.imgChecked=String
+      this.startDrag(document.getElementById(String),document.getElementById(String))
+    },
+    download_Result_of_identity_process(){
+      html2canvas(document.getElementById("block-two"),{useCORS:true}).then(function (canvas) {
+        const image=canvas.toDataURL("image/png")
+        let $a=document.createElement("a")
+        $a.setAttribute("href",image)
+        $a.setAttribute("download","下载")
+        $a.click()
+      })
     },
     load_pic_button() {
       this.$refs.relFile.dispatchEvent(new MouseEvent('click'))
@@ -583,6 +695,7 @@ export default {
       this.filename_of_pic_in_back='';
       this.result_of_process=false;
       this.url_normal_process_result='';
+      this.process_page = 0
     }
   }
 }
@@ -744,7 +857,6 @@ export default {
   max-width: 100%;
   position: absolute;
   object-fit: contain;
-  max-height: 300px;
   z-index: 60;
 }
 .block-four{
@@ -767,9 +879,9 @@ export default {
 }
 .imgOne{
   position: absolute;
-  margin-left: 0%;
+  margin-left: 0;
   width: auto;
-  height: 50%;
+  height: 150px;
   z-index: 1;
   object-fit: contain;
   max-height: 100%;
@@ -778,9 +890,9 @@ export default {
 }
 .imgTwo{
   position: absolute;
-  margin-left: 50%;
+  margin-left: 200px;
   width: auto;
-  height: 50%;
+  height: 150px;
   z-index: 2;
   object-fit: contain;
   max-height: 100%;
@@ -788,10 +900,10 @@ export default {
 }
 .imgThree{
   position: absolute;
-  margin-left: 0%;
-  margin-top: 50%;
+  margin-left: 0;
+  margin-top: 200px;
   width: auto;
-  height: 50%;
+  height: 150px;
   z-index: 3;
   object-fit: contain;
   max-height: 100%;
@@ -799,10 +911,10 @@ export default {
 }
 .imgFour{
   position: absolute;
-  margin-left: 50%;
-  margin-top: 50%;
+  margin-left: 200px;
+  margin-top: 200px;
   width: auto;
-  height: 50%;
+  height: 150px;
   z-index: 4;
   object-fit: contain;
   max-height: 100%;
@@ -876,13 +988,14 @@ export default {
   text-align: center;
 }
 
-.block-two{
+#block-two{
   width: 25%;
   height: 300px;
   background-color: white;
   position: absolute;
   margin-top: 40px;
   margin-left: 40%;
+  overflow: hidden;
 }
 
 .select-BGColor{
@@ -946,6 +1059,12 @@ export default {
   color: whitesmoke;
   cursor: pointer;
 }
+.photo_of_user_in_identity{
+  max-height: 100%;
+  max-width: 100%;
+  height: 300px;
+  object-fit: contain;
+}
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
   position: absolute;
@@ -974,7 +1093,16 @@ export default {
 .identity_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
+#identity_result_person{
+  position: absolute;
+  margin-left: -11%;
+  width: auto;
+  height: 300px;
+  z-index: 10;
+  object-fit: contain;
+  max-height: 100%;
+  max-width: 100%;
+}
 .person_process_button{
   width: 150px;
   height: 150px;
@@ -1033,7 +1161,12 @@ export default {
 .change_style_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-
+#special_process_result_in_bg{
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 300px;
+}
 /*下面部分*/
 .down{
   width: 79%;

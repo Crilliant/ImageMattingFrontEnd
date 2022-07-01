@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import header from "@/views/Header";
-
+import test from "@/views/test";
 const routes = [
   {
     path: '/',
@@ -11,7 +11,7 @@ const routes = [
   ,{
     path: '/t',
     name:'test',
-    component: header
+    component: test
   }
 ]
 

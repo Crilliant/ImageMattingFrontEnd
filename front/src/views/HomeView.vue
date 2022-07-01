@@ -29,6 +29,7 @@
       <!--      图片位置-->
       <div class="block-three">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <center><div class="load_person"></div></center>
         <img id="identity_result_img" :src="url_normal_process_result" value='custom'/>
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
@@ -44,6 +45,7 @@
     <div class="blockMain">
       <div class="block-one">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <center><div class="load_identity"></div></center>
         <img :src='url_normal_process_result' class="photo_of_user_in_identity">
       </div>
       <div id="block-two" :style="{background:'rgb('+red+','+green+','+blue+')'}">
@@ -75,6 +77,7 @@
     <div class="blockMain">
       <div class="block-four">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <center><div class="load_background"></div></center>
         <img id="normal_process_result_in_bg" value="custom" :src="url_normal_process_result">
       </div>
       <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
@@ -82,12 +85,12 @@
       <button @click="onBtn('load_bg_img_btn')" type="primary"  class="change_style_btn">选择图片</button>
       <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
       <div id="width_height_tools">
-        <button @click="changeBlock('addWidth')">addWidth</button>
-        <button @click="changeBlock('reduceWidth')">reduceWidth</button>
-        <button @click="changeBlock('addHeight')">addHeight</button>
-        <button @click="changeBlock('reduceHeight')">reduceHeight</button>
-        <div><span>请输入你要添加的文字</span></div>
-        <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="message" @change="print()">
+        <button @click="changeBlock('addWidth')" style="border: none;border-radius: 3px;width: 75px;background-color: #99ccff">addWidth</button>
+        <button @click="changeBlock('reduceWidth')" style="border: none;border-radius: 3px;width: 90px;margin-left: 5px;background-color: #99ccff">reduceWidth</button>
+        <button @click="changeBlock('addHeight')" style="border: none;border-radius: 3px;width: 75px;background-color: #99ccff">addHeight</button>
+        <button @click="changeBlock('reduceHeight')" style="border: none;border-radius: 3px;width: 90px;margin-left: 5px;background-color: #99ccff">reduceHeight</button>
+<!--        <div><span>请输入你要添加的文字</span></div>-->
+        <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="message" @change="print()" style="margin-top: 10px">
         <p>
           red:<input type="range" max="255" min="0" v-model="word_red" class="m-select"><br>
           green:<input type="range" max="255" min="0" v-model="word_green" class="m-select"><br>
@@ -177,6 +180,7 @@
       </div>
       <div id="block-six">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <center><div class="load_style"></div></center>
         <img id="special_process_result" value="custom" :src="url_normal_process_result">
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
@@ -788,7 +792,13 @@ export default {
 
 </script>
 <style>
-
+.load_person, .load_identity,.load_background,.load_style{
+  background-image: url("../assets/40.gif");
+  width: 75px;
+  height: 30px;
+  background-size: 100%,100%;
+  z-index: 999;
+}
 
 #change_bg_result_img_original{
   max-height: 100%;
@@ -957,7 +967,7 @@ export default {
 #block-five{
   position:absolute;
   overflow: hidden;
-  width: 420px;
+  width: 350px;
   height: 320px;
   background-color: white;
   margin-top: 20px;
@@ -1027,7 +1037,7 @@ export default {
   outline: none;
 }
 #width_height_tools{
-  padding-left: 870px;
+  left: 700px;
   padding-top: 20px;
   position: absolute;
 }
@@ -1275,8 +1285,7 @@ export default {
   height: 300px;
 }
 #style_tool_box{
-  padding-left: 730px;
-  padding-top: 30px;
+  padding-left: 610px;
 }
 /*下面部分*/
 .down{

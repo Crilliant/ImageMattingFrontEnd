@@ -85,6 +85,14 @@
         <button @click="changeBlock('reduceWidth')">reduceWidth</button>
         <button @click="changeBlock('addHeight')">addHeight</button>
         <button @click="changeBlock('reduceHeight')">reduceHeight</button>
+        <div><span>请输入你要添加的文字</span></div>
+        <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="message" @change="print()">
+        <p>
+          red:<input type="range" max="255" min="0" v-model="word_red" class="m-select"><br>
+          green:<input type="range" max="255" min="0" v-model="word_green" class="m-select"><br>
+          blue:<input type="range" max="255" min="0" v-model="word_blue" class="m-select"><br>
+        </p>
+        <input type="range" max="360" min="-360" v-model="word_rotate" >
       </div>
       <div id="block-five" :style="{left:+boxLeft+'px',top:+boxTop+'px'}">
         <img
@@ -139,6 +147,12 @@
             :style="{transform:'scale('+params.zoomVal_5+')'}"
             @mousewheel="bagimg($event,'result_of_change_bg_person')" @mousewheel.prevent
         />
+        <span class="mes" id="m"
+              :style="{color: 'rgb('+word_red+','+word_green+','+word_blue+')',fontSize:fontSizes+'px',transform:'rotate('+word_rotate+'deg'+') scale('+params.zoomVal_7+')'}"
+              @mousedown="imgCheck('m')"
+              @mousewheel="bagimg($event,'m')"
+              @mousewheel.prevent
+        >{{message}}</span>
       </div>
       <div id="bgGroup">
         <img :src=bg_option[0] @click="change_bg(0)" class="g1">
@@ -158,12 +172,21 @@
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
-        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <img id="special_process_result_in_bg" value="custom" :src="url_normal_process_result">
+        <img id="style_process_origin" value="custom" :src="location_of_uploaded_img">
       </div>
-      <div class="block-two"></div>
+      <div id="block-six">
+        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <img id="special_process_result" value="custom" :src="url_normal_process_result">
+      </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-      <button type="primary"  class="change_style_btn">添加背景</button>
+      <button type="primary"  class="change_style_btn">选择背景</button>
+      <div id="style_tool_box">
+        <img :src=style_option[0] @click="change_style(0)" class="g1" alt="水彩">
+        <img :src=style_option[1] @click="change_style(1)" class="g2" alt="素描">
+        <img :src=style_option[2] @click="change_style(2)" class="g3" alt="霓虹">
+        <img :src=style_option[3] @click="change_style(3)" class="g4" alt="待定">
+        <img :src=style_option[4] @click="change_style(4)" class="g5" alt="待定">
+      </div>
     </div>
     <div class="st1"></div>
     <div class="st2"></div>
@@ -238,6 +261,7 @@ export default {
         zoomVal_4:1,
         zoomVal_5:1,
         zoomVal_6:1,
+        zoomVal_7:1,
         left: 0,
         top: 0,
         currentX: 0,
@@ -254,10 +278,19 @@ export default {
       red:255,
       green:255,
       blue:255,
+      //字体颜色角度
+      word_red:0,
+      word_green:0,
+      word_blue:0,
+      word_rotate:0,
       //图片删除
       imgChecked:"",
       deleteImgOne:false,
       deleteImgTwo:0,
+      message:"",
+      fontSizes:20,
+      rotates:0,
+      style_option:[]
     }
   },
   mounted() {
@@ -502,6 +535,13 @@ export default {
         }
         this.wheel=false
       }
+      if(String=="m"){
+        this.params.zoomVal_7 += event.wheelDelta / 1200;
+        if (this.params.zoomVal_7 <= 0.2) {
+          this.params.zoomVal_7 = 0.2;
+        }
+        this.wheel=false
+      }
       setTimeout(() => {
         this.wheel=true
       }, 300)
@@ -614,20 +654,58 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.destroyTimer();
       this.model='changed_style_photo';
-      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-      let param = new FormData();
-      param.append('file',file,file.name)
-      request.post('/api/style/watercolor',param).then(res=>{
-        if(res.status=='success'){
-          var r=confirm("照片处理中，请稍后");
-          this.filename_of_pic_in_back = res.message
-        }else {
-          console.log(res)
-          var r=confirm("上传有误");
-          return
-        };
-      })
-      this.set_Timer()
+    },
+    change_style(style_number){
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.destroyTimer();
+      if(style_number==0){
+        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+        let param = new FormData();
+        param.append('file',file,file.name)
+        request.post('/api/style/watercolor',param).then(res=>{
+          if(res.status=='success'){
+            var r=confirm("照片处理中，请稍后");
+            this.filename_of_pic_in_back = res.message
+          }else {
+            console.log(res)
+            var r=confirm("上传有误");
+            return
+          };
+        })
+        this.set_Timer()
+      }
+      if(style_number==1){
+        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+        let param = new FormData();
+        param.append('file',file,file.name)
+        request.post('/api/style/sketch',param).then(res=>{
+          if(res.status=='success'){
+            var r=confirm("照片处理中，请稍后");
+            this.filename_of_pic_in_back = res.message
+          }else {
+            console.log(res)
+            var r=confirm("上传有误");
+            return
+          };
+        })
+        this.set_Timer()
+      }
+      if(style_number==2){
+        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+        let param = new FormData();
+        param.append('file',file,file.name)
+        request.post('/api/style/neno',param).then(res=>{
+          if(res.status=='success'){
+            var r=confirm("照片处理中，请稍后");
+            this.filename_of_pic_in_back = res.message
+          }else {
+            console.log(res)
+            var r=confirm("上传有误");
+            return
+          };
+        })
+        this.set_Timer()
+      }
     },
     process_person(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
@@ -877,7 +955,7 @@ export default {
   margin-top: 20px;
   margin-left: 33%;
 }
-.imgOne{
+#imgOne{
   position: absolute;
   margin-left: 0;
   width: auto;
@@ -888,7 +966,7 @@ export default {
   max-width: 100%;
 
 }
-.imgTwo{
+#imgTwo{
   position: absolute;
   margin-left: 200px;
   width: auto;
@@ -898,7 +976,7 @@ export default {
   max-height: 100%;
   max-width: 100%;
 }
-.imgThree{
+#imgThree{
   position: absolute;
   margin-left: 0;
   margin-top: 200px;
@@ -909,7 +987,7 @@ export default {
   max-height: 100%;
   max-width: 100%;
 }
-.imgFour{
+#imgFour{
   position: absolute;
   margin-left: 200px;
   margin-top: 200px;
@@ -919,6 +997,11 @@ export default {
   object-fit: contain;
   max-height: 100%;
   max-width: 100%;
+}
+#m{
+  position: absolute;
+  width: auto;
+  z-index: 100;
 }
 #bgGroup{
   padding-top: 70px;
@@ -937,7 +1020,7 @@ export default {
 }
 #width_height_tools{
   padding-left: 870px;
-  padding-top: 100px;
+  padding-top: 20px;
   position: absolute;
 }
 .identity_part{
@@ -1065,6 +1148,15 @@ export default {
   height: 300px;
   object-fit: contain;
 }
+#block-six{
+  width: 25%;
+  height: 300px;
+  background-color: white;
+  position: absolute;
+  margin-top: 40px;
+  margin-left: 40%;
+  text-align: center;
+}
 /* 中间4个控件*//*改了边框，样式，阴影，hover和act*/
 .middle{
   position: absolute;
@@ -1161,11 +1253,22 @@ export default {
 .change_style_button:active{
   box-shadow: 0px 0px 10px #888888;
 }
-#special_process_result_in_bg{
+#special_process_result{
   max-height: 100%;
   max-width: 100%;
   object-fit: contain;
   height: 300px;
+}
+#style_process_origin{
+  padding-left: 0px;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  height: 300px;
+}
+#style_tool_box{
+  padding-left: 730px;
+  padding-top: 30px;
 }
 /*下面部分*/
 .down{

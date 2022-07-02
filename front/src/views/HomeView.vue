@@ -184,7 +184,7 @@
         <img id="style_process_origin" value="custom" :src="location_of_uploaded_img">
       </div>
       <div id="block-six">
-        <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
+        <div class="waiting_info" v-if="url_normal_process_result==''">等待上传ing</div>
         <center><div class="load_style" v-if="url_normal_process_result==''"></div></center>
         <img id="special_process_result" value="custom" :src="url_normal_process_result">
       </div>
@@ -192,10 +192,12 @@
       <button type="primary"  class="change_style_btn">选择背景</button>
       <div id="style_tool_box">
         <img :src=style_option[0] @click="change_style(0)" class="g1" alt="水彩">
-        <img :src=style_option[1] @click="change_style(1)" class="g2" alt="素描">
+        <img :src=style_option[1] @click="change_style(1)" class="g2" alt="速写">
         <img :src=style_option[2] @click="change_style(2)" class="g3" alt="霓虹">
-        <img :src=style_option[3] @click="change_style(3)" class="g4" alt="待定">
-        <img :src=style_option[4] @click="change_style(4)" class="g5" alt="待定">
+        <img :src=style_option[3] @click="change_style(3)" class="g4" alt="复古">
+        <img :src=style_option[4] @click="change_style(4)" class="g5" alt="黑白">
+        <img :src=style_option[4] @click="change_style(5)" class="g6" alt="浮雕">
+        <img :src=style_option[4] @click="change_style(6)" class="g7" alt="素描">
       </div>
     </div>
     <div class="st1"></div>
@@ -242,7 +244,7 @@
       <img src="../assets/34.png">
     </div>
   </a>
-
+  <canvas id="myCanvas" style="display: none;"></canvas>
 </template>
 
 <script>
@@ -312,7 +314,7 @@ export default {
   },
   mounted() {
     this.imgShow()
-    //this.getImg(this.imageUrl);
+    this.getImg(this.location_of_uploaded_img);
     document.addEventListener("scroll", this.addScroll)
   },
   watch:{
@@ -386,6 +388,7 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.url_normal_process_result = ''
       this.destroyTimer();
+      this.model='changed_background_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
@@ -394,7 +397,6 @@ export default {
         if(res.status=='success'){
           this.filename_of_pic_in_back = res.message
           this.show_upload_result("上传成功，正在处理中")
-          this.model='changed_background_photo';
           request_of_jason.post('api/background/load').then(res=>{
             this.bg_option = res.urls
             console.log(res)
@@ -667,6 +669,10 @@ export default {
       this.model='changed_style_photo';
     },
     change_style(style_number){
+      if(style_number>=3){
+        this.getImg(this.location_of_uploaded_img,style_number)
+        return
+      }
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.destroyTimer();
       if(style_number==0){
@@ -714,163 +720,239 @@ export default {
         })
         this.set_Timer()
       }
-      // if(style_number==3){
-      //   this.getImg(this.url_normal_process_result)
-      // }
     },
-    // getImg(src,index) {
-    //   let that = this;
-    //   let img = new Image();
-    //   img.src = src;
-    //   img.onload = function () {
-    //     // 处理图像
-    //     that.drawImages(src, img.width, img.height, index);
-    //   };
-    // },
-    // drawImages(imgSrc, width, height, index) {
-    //   let that = this;
-    //   var img = new Image();
-    //   img.src = imgSrc;
-    //   img.onload = function () {
-    //     var canvas = document.querySelector("#myCanvas");
-    //     var cxt = canvas.getContext("2d");
-    //     if (width < 750 || height < 1334) {
-    //       canvas.width = width;
-    //       canvas.height = height;
-    //     } else {
-    //       // 一般手机的图像素都比较大，这里缩小一下精度，避免循环太久
-    //       let times = Math.floor(width / 750);
-    //       canvas.width = width / times;
-    //       canvas.height = height / times;
-    //     }
-    //     // 在画布上绘制图片，主要是为了读取读取图片的每一个像素的rgb值
-    //     cxt.drawImage(img, 0, 0, canvas.width, canvas.height);
-    //     // 得到每一个像素的rgb值，得到的数组以4个为单位，%4=1的是r值, %4=2是g值, %4=3是b值，%4=像素模糊值(0-255）
-    //     let imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
-    //     let imageData_length = imageData.data.length / 4;
-    //     let d = imageData.data;
-    //     let originData = [];
-    //     // 输出老照片
-    //     if (index == 3) {
-    //       that.drawOldImg(d);
-    //       cxt.putImageData(imageData, 0, 0);
-    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
-    //       that.url_normal_process_result = imgurl;
-    //     } else if (index == 4) {
-    //       // 黑白
-    //       that.discolor(d);
-    //       cxt.putImageData(imageData, 0, 0);
-    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
-    //       that.url_normal_process_result = imgurl;
-    //     } else if (index == 5) {
-    //       //浮雕的效果
-    //       that.relief(d);
-    //       cxt.putImageData(imageData, 0, 0);
-    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
-    //       that.url_normal_process_result = imgurl;
-    //     } else if (index == 6) {
-    //       // 素描
-    //       that.sketch(imageData, 20, canvas, cxt);
-    //       cxt.putImageData(imageData, 0, 0);
-    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
-    //       that.url_normal_process_result = imgurl;
-    //     }
-    //   };
-    // },
-    // // 老照片
-    // drawOldImg(d) {
-    //   for (var i = 0; i < d.length; i += 4) {
-    //     var r = d[i];
-    //     var g = d[i + 1];
-    //     var b = d[i + 2];
-    //     d[i] = r * 0.393 + g * 0.769 + b * 0.189; // red
-    //     d[i + 1] = r * 0.349 + g * 0.686 + b * 0.168; // green
-    //     d[i + 2] = r * 0.272 + g * 0.534 + b * 0.131; // blue
-    //     d[i + 3] = 255; // 像素模糊值
-    //   }
-    //   return d;
-    // },
-    // // 素描
-    // sketch(imgData, radius, canvas, ctx) {
-    //   let pixes = imgData.data;
-    //   let width = imgData.width;
-    //   let height = imgData.height;
-    //   let copyPixes = "";
-    //   this.discolor(pixes); //去色
-    //   //复制一份
-    //   ctx.clearRect(0, 0, width, height);
-    //   ctx.putImageData(imgData, 0, 0);
-    //   copyPixes = ctx.getImageData(0, 0, width, height).data;
-    //   // 拷贝数组太慢
-    //   this.invert(copyPixes); //反相
-    //   this.gaussBlurs(copyPixes, width, height, radius); //高斯模糊
-    //   this.dodgeColor(pixes, copyPixes); //颜色减淡
-    //   return pixes;
-    // },
-    // // 把图像变成黑白色
-    // discolor(d) {
-    //   for (var i = 0; i < d.length; i += 4) {
-    //     let average = d[i] * 0.1 + d[i + 1] * 0.5 + d[i + 2] * 0.9;
-    //     d[i + 0] = average; //红
-    //     d[i + 1] = average; //绿
-    //     d[i + 2] = average; //蓝
-    //   }
-    //   return d;
-    // },
-    // //浮雕
-    // relief(d) {
-    //   for (var i = 0, j = 4; i < d.length; i += 4, j += 4) {
-    //     if (j > d.length) {
-    //       j = d.length - 4;
-    //     }
-    //     // 3.把相邻像素的同个通道进行差值运算,再加上中性灰的色值
-    //     let r = Math.abs(d[i] - d[j] + 128),
-    //         g = Math.abs(d[i + 1] - d[j + 1] + 128),
-    //         b = Math.abs(d[i + 2] - d[j + 2] + 128);
-    //
-    //     // 4.把结果通道的值进行求和并按权平均作为最终通道的值
-    //     let val = parseInt(r * 0.3 + g * 0.6 + b * 0.1);
-    //     d[i] = val;
-    //     d[i + 1] = val;
-    //     d[i + 2] = val;
-    //   }
-    //   return d;
-    // },
-    // // 把图片反相, 即将某个颜色换成它的补色
-    // invert(pixes) {
-    //   for (var i = 0, len = pixes.length; i < len; i += 4) {
-    //     pixes[i] = 255 - pixes[i]; //r
-    //     pixes[i + 1] = 255 - pixes[i + 1]; //g
-    //     pixes[i + 2] = 255 - pixes[i + 2]; //b
-    //   }
-    //   return pixes;
-    // },
-    // // 颜色减淡
-    // dodgeColor(basePixes, mixPixes) {
-    //   for (var i = 0, len = basePixes.length; i < len; i += 4) {
-    //     basePixes[i] =
-    //         basePixes[i] + (basePixes[i] * mixPixes[i]) / (255 - mixPixes[i]);
-    //     basePixes[i + 1] =
-    //         basePixes[i + 1] +
-    //         (basePixes[i + 1] * mixPixes[i + 1]) / (255 - mixPixes[i + 1]);
-    //     basePixes[i + 2] =
-    //         basePixes[i + 2] +
-    //         (basePixes[i + 2] * mixPixes[i + 2]) / (255 - mixPixes[i + 2]);
-    //   }
-    //   return basePixes;
-    // },
+    getImg(src,index) {
+      let that = this;
+      let img = new Image();
+      img.src = src;
+      img.onload = function () {
+        // 处理图像
+        that.drawImages(src, img.width, img.height, index);
+      };
+    },
+    drawImages(imgSrc, width, height, index) {
+      let that = this;
+      var img = new Image();
+      img.src = imgSrc;
+      img.onload = function () {
+        var canvas = document.querySelector("#myCanvas");
+        var cxt = canvas.getContext("2d");
+        if (width < 750 || height < 1334) {
+          canvas.width = width;
+          canvas.height = height;
+        } else {
+          // 一般手机的图像素都比较大，这里缩小一下精度，避免循环太久
+          let times = Math.floor(width / 750);
+          canvas.width = width / times;
+          canvas.height = height / times;
+        }
+        // 在画布上绘制图片，主要是为了读取读取图片的每一个像素的rgb值
+        cxt.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // 得到每一个像素的rgb值，得到的数组以4个为单位，%4=1的是r值, %4=2是g值, %4=3是b值，%4=像素模糊值(0-255）
+        let imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
+        let imageData_length = imageData.data.length / 4;
+        let d = imageData.data;
+        let originData = [];
+        // 输出老照片
+        if (index == 3) {
+          that.drawOldImg(d);
+          cxt.putImageData(imageData, 0, 0);
+          let imgurl = canvas.toDataURL(); //获取图片的DataURL
+          that.url_normal_process_result = imgurl;
+        } else if (index == 4) {
+          // 黑白
+          that.discolor(d);
+          cxt.putImageData(imageData, 0, 0);
+          let imgurl = canvas.toDataURL(); //获取图片的DataURL
+          that.url_normal_process_result = imgurl;
+        } else if (index == 5) {
+          //浮雕的效果
+          that.relief(d);
+          cxt.putImageData(imageData, 0, 0);
+          let imgurl = canvas.toDataURL(); //获取图片的DataURL
+          that.url_normal_process_result = imgurl;
+        } else if (index == 6) {
+          // 素描
+          that.sketch(imageData, 20, canvas, cxt);
+          cxt.putImageData(imageData, 0, 0);
+          let imgurl = canvas.toDataURL(); //获取图片的DataURL
+          that.url_normal_process_result = imgurl;
+        }
+      };
+    },
+    // 老照片
+    drawOldImg(d) {
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i];
+        var g = d[i + 1];
+        var b = d[i + 2];
+        d[i] = r * 0.393 + g * 0.769 + b * 0.189; // red
+        d[i + 1] = r * 0.349 + g * 0.686 + b * 0.168; // green
+        d[i + 2] = r * 0.272 + g * 0.534 + b * 0.131; // blue
+        d[i + 3] = 255; // 像素模糊值
+      }
+      return d;
+    },
+    // 素描
+    sketch(imgData, radius, canvas, ctx) {
+      let pixes = imgData.data;
+      let width = imgData.width;
+      let height = imgData.height;
+      let copyPixes = "";
+      this.discolor(pixes); //去色
+      //复制一份
+      ctx.clearRect(0, 0, width, height);
+      ctx.putImageData(imgData, 0, 0);
+      copyPixes = ctx.getImageData(0, 0, width, height).data;
+      // 拷贝数组太慢
+      this.invert(copyPixes); //反相
+      this.gaussBlurs(copyPixes, width, height, radius); //高斯模糊
+      this.dodgeColor(pixes, copyPixes); //颜色减淡
+      return pixes;
+    },
+    // 把图像变成黑白色
+    discolor(d) {
+      for (var i = 0; i < d.length; i += 4) {
+        let average = d[i] * 0.1 + d[i + 1] * 0.5 + d[i + 2] * 0.9;
+        d[i + 0] = average; //红
+        d[i + 1] = average; //绿
+        d[i + 2] = average; //蓝
+      }
+      return d;
+    },
+    //浮雕
+    relief(d) {
+      for (var i = 0, j = 4; i < d.length; i += 4, j += 4) {
+        if (j > d.length) {
+          j = d.length - 4;
+        }
+        // 3.把相邻像素的同个通道进行差值运算,再加上中性灰的色值
+        let r = Math.abs(d[i] - d[j] + 128),
+            g = Math.abs(d[i + 1] - d[j + 1] + 128),
+            b = Math.abs(d[i + 2] - d[j + 2] + 128);
 
+        // 4.把结果通道的值进行求和并按权平均作为最终通道的值
+        let val = parseInt(r * 0.3 + g * 0.6 + b * 0.1);
+        d[i] = val;
+        d[i + 1] = val;
+        d[i + 2] = val;
+      }
+      return d;
+    },
+    // 把图片反相, 即将某个颜色换成它的补色
+    invert(pixes) {
+      for (var i = 0, len = pixes.length; i < len; i += 4) {
+        pixes[i] = 255 - pixes[i]; //r
+        pixes[i + 1] = 255 - pixes[i + 1]; //g
+        pixes[i + 2] = 255 - pixes[i + 2]; //b
+      }
+      return pixes;
+    },
+    // 颜色减淡
+    dodgeColor(basePixes, mixPixes) {
+      for (var i = 0, len = basePixes.length; i < len; i += 4) {
+        basePixes[i] =
+            basePixes[i] + (basePixes[i] * mixPixes[i]) / (255 - mixPixes[i]);
+        basePixes[i + 1] =
+            basePixes[i + 1] +
+            (basePixes[i + 1] * mixPixes[i + 1]) / (255 - mixPixes[i + 1]);
+        basePixes[i + 2] =
+            basePixes[i + 2] +
+            (basePixes[i + 2] * mixPixes[i + 2]) / (255 - mixPixes[i + 2]);
+      }
+      return basePixes;
+    },
+    gaussBlurs(pixes, width, height, radius) {
+      var gaussMatrix = [],
+          gaussSum = 0,
+          x,
+          y,
+          r,
+          g,
+          b,
+          a,
+          i,
+          j,
+          k,
+          len;
+
+      radius = Math.floor(radius) || 3;
+      let sigma = radius / 3;
+
+      a = 1 / (Math.sqrt(2 * Math.PI) * sigma);
+      b = -1 / (2 * sigma * sigma);
+      //生成高斯矩阵
+      for (i = 0, x = -radius; x <= radius; x++, i++) {
+        g = a * Math.exp(b * x * x);
+        gaussMatrix[i] = g;
+        gaussSum += g;
+      }
+      //归一化, 保证高斯矩阵的值在[0,1]之间
+      for (i = 0, len = gaussMatrix.length; i < len; i++) {
+        gaussMatrix[i] /= gaussSum;
+      }
+      //x 方向一维高斯运算
+      for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+          r = g = b = a = 0;
+          gaussSum = 0;
+          for (j = -radius; j <= radius; j++) {
+            k = x + j;
+            if (k >= 0 && k < width) {
+              //确保 k 没超出 x 的范围
+              //r,g,b,a 四个一组
+              i = (y * width + k) * 4;
+              r += pixes[i] * gaussMatrix[j + radius];
+              g += pixes[i + 1] * gaussMatrix[j + radius];
+              b += pixes[i + 2] * gaussMatrix[j + radius];
+              // a += pixes[i + 3] * gaussMatrix[j];
+              gaussSum += gaussMatrix[j + radius];
+            }
+          }
+          i = (y * width + x) * 4;
+          // 除以 gaussSum 是为了消除处于边缘的像素, 高斯运算不足的问题
+          // console.log(gaussSum)
+          pixes[i] = r / gaussSum;
+          pixes[i + 1] = g / gaussSum;
+          pixes[i + 2] = b / gaussSum;
+          // pixes[i + 3] = a ;
+        }
+      }
+      //y 方向一维高斯运算
+      for (x = 0; x < width; x++) {
+        for (y = 0; y < height; y++) {
+          r = g = b = a = 0;
+          gaussSum = 0;
+          for (j = -radius; j <= radius; j++) {
+            k = y + j;
+            if (k >= 0 && k < height) {
+              //确保 k 没超出 y 的范围
+              i = (k * width + x) * 4;
+              r += pixes[i] * gaussMatrix[j + radius];
+              g += pixes[i + 1] * gaussMatrix[j + radius];
+              b += pixes[i + 2] * gaussMatrix[j + radius];
+              gaussSum += gaussMatrix[j + radius];
+            }
+          }
+          i = (y * width + x) * 4;
+          pixes[i] = r / gaussSum;
+          pixes[i + 1] = g / gaussSum;
+          pixes[i + 2] = b / gaussSum;
+        }
+      }
+      return pixes;
+    },
     process_person(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.url_normal_process_result = ''
       this.destroyTimer();
+      this.model='person_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           this.filename_of_pic_in_back = res.message
-          this.model='person_photo';
           this.show_upload_result("上传成功，正在处理中")
           this.set_Timer()
         }else {
@@ -883,13 +965,13 @@ export default {
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
       this.url_normal_process_result = ''
       this.destroyTimer();
+      this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
           this.filename_of_pic_in_back = res.message
-          this.model='identity_photo';
           this.show_upload_result("上传成功，正在处理中")
           this.set_Timer()
         }else {
@@ -918,6 +1000,7 @@ export default {
       // 上传文件
     },
     return_to_main_page(){
+      this.location_of_uploaded_img = ''
       this.model='main';
       this.destroyTimer();
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
@@ -1524,6 +1607,133 @@ export default {
 }
 #style_tool_box{
   padding-left: 725px;
+  margin-top: -25px;
+}
+.g1{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 12%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g1:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g1:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 18%;
+  margin-top: 40px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g2:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 8%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g3:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 15%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g4:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 22%;
+  margin-top: 95px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g5:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g6{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 12%;
+  margin-top: 150px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g6:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g6:active{
+  box-shadow: 0px 0px 10px #888888;
+}
+.g7{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 18%;
+  margin-top: 150px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g7:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g7:active{
+  box-shadow: 0px 0px 10px #888888;
 }
 /*下面部分*/
 .down{
@@ -1795,96 +2005,6 @@ export default {
   -webkit-background-size: cover;
   -o-background-size: cover;
   background-position: center 0;
-}
-.g1{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 12%;
-  margin-top: 40px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g1:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g1:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g2{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 18%;
-  margin-top: 40px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g2:hover{
-   box-shadow: 0px 0px 10px #5E5D5D;
-   cursor: pointer;
- }
-.g2:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g3{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 8%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g3:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g3:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g4{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 15%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g4:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g4:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g5{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 22%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g5:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g5:active{
-  box-shadow: 0px 0px 10px #888888;
 }
 .block-four{
   width: 15%;

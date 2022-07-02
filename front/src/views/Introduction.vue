@@ -65,7 +65,7 @@ export default {
   min-width: 1000px;
   z-index: -1;
   zoom: 1;
-  background-image: url(../assets/39.png) ;
+  background-image: url('../assets/39.png') ;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center 0;
@@ -76,5 +76,8 @@ export default {
   font-size: 25px;
   line-height: 40px;
 }
-
+.down{
+  margin-top: 80px;
+  background:none;
+}
 </style>

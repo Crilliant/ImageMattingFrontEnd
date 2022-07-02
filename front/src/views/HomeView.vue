@@ -30,7 +30,7 @@
       <!--      图片位置-->
       <div class="block-three">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <center><div class="load_person"></div></center>
+        <center><div class="load_person" v-if="url_normal_process_result==''"></div></center>
         <img id="identity_result_img" :src="url_normal_process_result" value='custom'/>
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
@@ -46,7 +46,7 @@
     <div class="blockMain">
       <div class="block-one">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <center><div class="load_identity"></div></center>
+        <center><div class="load_identity" v-if="url_normal_process_result==''"></div></center>
         <img :src='url_normal_process_result' class="photo_of_user_in_identity">
       </div>
       <div id="block-two" :style="{background:'rgb('+red+','+green+','+blue+')'}">
@@ -78,7 +78,7 @@
     <div class="blockMain">
       <div class="block-four">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <center><div class="load_background"></div></center>
+        <center><div class="load_background" v-if="url_normal_process_result==''"></div></center>
         <img id="normal_process_result_in_bg" value="custom" :src="url_normal_process_result">
       </div>
       <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
@@ -185,7 +185,7 @@
       </div>
       <div id="block-six">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
-        <center><div class="load_style"></div></center>
+        <center><div class="load_style" v-if="url_normal_process_result==''"></div></center>
         <img id="special_process_result" value="custom" :src="url_normal_process_result">
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
@@ -312,6 +312,7 @@ export default {
   },
   mounted() {
     this.imgShow()
+    //this.getImg(this.imageUrl);
     document.addEventListener("scroll", this.addScroll)
   },
   watch:{
@@ -383,27 +384,27 @@ export default {
     },
     process_change_background(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.url_normal_process_result = ''
       this.destroyTimer();
-      this.model='changed_background_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
       // 上传图片到后端
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
-          var r=confirm("照片处理中，请稍后");
           this.filename_of_pic_in_back = res.message
+          this.show_upload_result("上传成功，正在处理中")
+          this.model='changed_background_photo';
+          request_of_jason.post('api/background/load').then(res=>{
+            this.bg_option = res.urls
+            console.log(res)
+          })
+          this.set_Timer()
         }else {
-          console.log(res)
-          var r=confirm("上传有误");
+          this.show_upload_result("上传有误，请重试")
           return
         };
       })
-      request_of_jason.post('api/background/load').then(res=>{
-        this.bg_option = res.urls
-        console.log(res)
-      })
-      this.set_Timer()
     },
     change_bg(order_of_bg_img){
       this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
@@ -495,14 +496,6 @@ export default {
         $a.click()
       })
     },
-    // download_Result() {
-    //   fetch(this.url_normal_process_result).then(res=>res.blob()).then(res=>{
-    //     const bqa = document.createElement("a");
-    //     bqa.setAttribute("download", this.filename_of_pic_in_back);
-    //     bqa.setAttribute("href", URL.createObjectURL(res));
-    //     bqa.click();
-    //   })
-    // },
     // 滚轮事件
     addScroll(){
       this.wheelChange=document.documentElement.scrollTop
@@ -669,6 +662,7 @@ export default {
 
     process_change_style(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.url_normal_process_result = ''
       this.destroyTimer();
       this.model='changed_style_photo';
     },
@@ -681,11 +675,10 @@ export default {
         param.append('file',file,file.name)
         request.post('/api/style/watercolor',param).then(res=>{
           if(res.status=='success'){
-            var r=confirm("照片处理中，请稍后");
+            this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
           }else {
-            console.log(res)
-            var r=confirm("上传有误");
+            this.show_upload_result("上传有误，请重试")
             return
           };
         })
@@ -697,11 +690,10 @@ export default {
         param.append('file',file,file.name)
         request.post('/api/style/sketch',param).then(res=>{
           if(res.status=='success'){
-            var r=confirm("照片处理中，请稍后");
+            this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
           }else {
-            console.log(res)
-            var r=confirm("上传有误");
+            this.show_upload_result("上传有误，请重试")
             return
           };
         })
@@ -713,56 +705,198 @@ export default {
         param.append('file',file,file.name)
         request.post('/api/style/neno',param).then(res=>{
           if(res.status=='success'){
-            var r=confirm("照片处理中，请稍后");
+            this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
           }else {
-            console.log(res)
-            var r=confirm("上传有误");
+            this.show_upload_result("上传有误，请重试")
             return
           };
         })
         this.set_Timer()
       }
+      // if(style_number==3){
+      //   this.getImg(this.url_normal_process_result)
+      // }
     },
+    // getImg(src,index) {
+    //   let that = this;
+    //   let img = new Image();
+    //   img.src = src;
+    //   img.onload = function () {
+    //     // 处理图像
+    //     that.drawImages(src, img.width, img.height, index);
+    //   };
+    // },
+    // drawImages(imgSrc, width, height, index) {
+    //   let that = this;
+    //   var img = new Image();
+    //   img.src = imgSrc;
+    //   img.onload = function () {
+    //     var canvas = document.querySelector("#myCanvas");
+    //     var cxt = canvas.getContext("2d");
+    //     if (width < 750 || height < 1334) {
+    //       canvas.width = width;
+    //       canvas.height = height;
+    //     } else {
+    //       // 一般手机的图像素都比较大，这里缩小一下精度，避免循环太久
+    //       let times = Math.floor(width / 750);
+    //       canvas.width = width / times;
+    //       canvas.height = height / times;
+    //     }
+    //     // 在画布上绘制图片，主要是为了读取读取图片的每一个像素的rgb值
+    //     cxt.drawImage(img, 0, 0, canvas.width, canvas.height);
+    //     // 得到每一个像素的rgb值，得到的数组以4个为单位，%4=1的是r值, %4=2是g值, %4=3是b值，%4=像素模糊值(0-255）
+    //     let imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
+    //     let imageData_length = imageData.data.length / 4;
+    //     let d = imageData.data;
+    //     let originData = [];
+    //     // 输出老照片
+    //     if (index == 3) {
+    //       that.drawOldImg(d);
+    //       cxt.putImageData(imageData, 0, 0);
+    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
+    //       that.url_normal_process_result = imgurl;
+    //     } else if (index == 4) {
+    //       // 黑白
+    //       that.discolor(d);
+    //       cxt.putImageData(imageData, 0, 0);
+    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
+    //       that.url_normal_process_result = imgurl;
+    //     } else if (index == 5) {
+    //       //浮雕的效果
+    //       that.relief(d);
+    //       cxt.putImageData(imageData, 0, 0);
+    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
+    //       that.url_normal_process_result = imgurl;
+    //     } else if (index == 6) {
+    //       // 素描
+    //       that.sketch(imageData, 20, canvas, cxt);
+    //       cxt.putImageData(imageData, 0, 0);
+    //       let imgurl = canvas.toDataURL(); //获取图片的DataURL
+    //       that.url_normal_process_result = imgurl;
+    //     }
+    //   };
+    // },
+    // // 老照片
+    // drawOldImg(d) {
+    //   for (var i = 0; i < d.length; i += 4) {
+    //     var r = d[i];
+    //     var g = d[i + 1];
+    //     var b = d[i + 2];
+    //     d[i] = r * 0.393 + g * 0.769 + b * 0.189; // red
+    //     d[i + 1] = r * 0.349 + g * 0.686 + b * 0.168; // green
+    //     d[i + 2] = r * 0.272 + g * 0.534 + b * 0.131; // blue
+    //     d[i + 3] = 255; // 像素模糊值
+    //   }
+    //   return d;
+    // },
+    // // 素描
+    // sketch(imgData, radius, canvas, ctx) {
+    //   let pixes = imgData.data;
+    //   let width = imgData.width;
+    //   let height = imgData.height;
+    //   let copyPixes = "";
+    //   this.discolor(pixes); //去色
+    //   //复制一份
+    //   ctx.clearRect(0, 0, width, height);
+    //   ctx.putImageData(imgData, 0, 0);
+    //   copyPixes = ctx.getImageData(0, 0, width, height).data;
+    //   // 拷贝数组太慢
+    //   this.invert(copyPixes); //反相
+    //   this.gaussBlurs(copyPixes, width, height, radius); //高斯模糊
+    //   this.dodgeColor(pixes, copyPixes); //颜色减淡
+    //   return pixes;
+    // },
+    // // 把图像变成黑白色
+    // discolor(d) {
+    //   for (var i = 0; i < d.length; i += 4) {
+    //     let average = d[i] * 0.1 + d[i + 1] * 0.5 + d[i + 2] * 0.9;
+    //     d[i + 0] = average; //红
+    //     d[i + 1] = average; //绿
+    //     d[i + 2] = average; //蓝
+    //   }
+    //   return d;
+    // },
+    // //浮雕
+    // relief(d) {
+    //   for (var i = 0, j = 4; i < d.length; i += 4, j += 4) {
+    //     if (j > d.length) {
+    //       j = d.length - 4;
+    //     }
+    //     // 3.把相邻像素的同个通道进行差值运算,再加上中性灰的色值
+    //     let r = Math.abs(d[i] - d[j] + 128),
+    //         g = Math.abs(d[i + 1] - d[j + 1] + 128),
+    //         b = Math.abs(d[i + 2] - d[j + 2] + 128);
+    //
+    //     // 4.把结果通道的值进行求和并按权平均作为最终通道的值
+    //     let val = parseInt(r * 0.3 + g * 0.6 + b * 0.1);
+    //     d[i] = val;
+    //     d[i + 1] = val;
+    //     d[i + 2] = val;
+    //   }
+    //   return d;
+    // },
+    // // 把图片反相, 即将某个颜色换成它的补色
+    // invert(pixes) {
+    //   for (var i = 0, len = pixes.length; i < len; i += 4) {
+    //     pixes[i] = 255 - pixes[i]; //r
+    //     pixes[i + 1] = 255 - pixes[i + 1]; //g
+    //     pixes[i + 2] = 255 - pixes[i + 2]; //b
+    //   }
+    //   return pixes;
+    // },
+    // // 颜色减淡
+    // dodgeColor(basePixes, mixPixes) {
+    //   for (var i = 0, len = basePixes.length; i < len; i += 4) {
+    //     basePixes[i] =
+    //         basePixes[i] + (basePixes[i] * mixPixes[i]) / (255 - mixPixes[i]);
+    //     basePixes[i + 1] =
+    //         basePixes[i + 1] +
+    //         (basePixes[i + 1] * mixPixes[i + 1]) / (255 - mixPixes[i + 1]);
+    //     basePixes[i + 2] =
+    //         basePixes[i + 2] +
+    //         (basePixes[i + 2] * mixPixes[i + 2]) / (255 - mixPixes[i + 2]);
+    //   }
+    //   return basePixes;
+    // },
+
     process_person(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.url_normal_process_result = ''
       this.destroyTimer();
-      this.model='person_photo';
-      //this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
-      // 上传图片到后端
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
-          var r=confirm("照片处理中，请稍后");
           this.filename_of_pic_in_back = res.message
+          this.model='person_photo';
+          this.show_upload_result("上传成功，正在处理中")
+          this.set_Timer()
         }else {
-          console.log(res)
-          var r=confirm("上传有误");
+          this.show_upload_result("上传有误，请重试")
           return
         };
       })
-      this.set_Timer()
     },
     process_identification(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
+      this.url_normal_process_result = ''
       this.destroyTimer();
-      this.model='identity_photo';
       let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
       request.post('/api/image/segmentation',param).then(res=>{
         if(res.status=='success'){
-          var r=confirm("照片处理中，请稍后");
           this.filename_of_pic_in_back = res.message
+          this.model='identity_photo';
+          this.show_upload_result("上传成功，正在处理中")
+          this.set_Timer()
         }else {
-          console.log(res)
-          var r=confirm("上传有误");
+          this.show_upload_result("上传有误，请重试")
           return
         };
       })
-      this.set_Timer()
     },
     drag_person(String){
       this.imgChecked=String
@@ -791,6 +925,42 @@ export default {
       this.result_of_process=false;
       this.url_normal_process_result='';
       this.process_page = 0
+    },
+    //上传结果提示
+    showTips(objInfo){
+      let mTitle = objInfo && objInfo.title || "信息提示";
+      let w = objInfo && objInfo.width || 250;
+
+      let h = objInfo && objInfo.height || 100;
+      let duration = objInfo && objInfo.duration || 2200;
+
+      let infoTips = objInfo && objInfo.infoTips || "图片处理中";
+
+      const alert = document.createElement("div");
+      alert.style.cssText = `position:absolute;left:45%;top:0%;z-index:99999;color:white;font-size:18px;border-radius:10px;box-shadow:inset 0px 0px 8px #fff;background-color: rgba(0,0,0,0.5);overflow:hidden;`;
+      alert.style.width = w+"px";
+      alert.style.minHeight = h+"px";
+
+      const title = document.createElement("p");
+      title.innerHTML = mTitle+":";
+      title.style.cssText = `margin:10px 0 10px 10px;`;
+
+      const con = document.createElement("p");
+      con.style.cssText = `display:flex;justify-content:center;align-items:center;padding:0px 10px 0px;margin-bottom:10px;font-size:16px;word-break:break-all;`;
+      con.innerHTML = infoTips;
+
+      alert.appendChild(title);
+      alert.appendChild(con);
+      document.body.appendChild(alert);
+      setTimeout(function(){
+        document.body.removeChild(alert);
+      },duration);
+    },
+    show_upload_result(String){
+      const obj={
+        infoTips:String
+      }
+      this.showTips(obj)
     }
   }
 }

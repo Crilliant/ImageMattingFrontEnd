@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import introduction from "@/views/Introduction";
+import manual from "@/views/Manual";
 const routes = [
   {
     path: '/',
@@ -17,7 +18,13 @@ const routes = [
     meta:{
       title:'关于我们',
     }
-    }
+    },
+  {
+    path: '/manual',
+    name: 'manual',
+    component: manual
+  }
+
 ]
 
 const router = createRouter({

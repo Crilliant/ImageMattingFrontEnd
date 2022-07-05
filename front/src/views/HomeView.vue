@@ -1,12 +1,13 @@
 <template>
 <!--  导航栏-->
-  <div class="daohang">
+  <div class="header">
     <div class="logo"></div>
     <p id="page_title">在线抠图</p>
     <p id="about_us" @click="this.$router.replace('/intro')">关于我们</p>
+    <p id="manual" @click="this.$router.replace('/manual')">使用说明</p>
   </div>
   <!--上面部分-->
-  <div class="up" v-show="model=='main'">
+  <div class="up" v-show="show_model==0">
     <div class="in1">
       <form enctype="multipart/form-data" method="post">
         <p type="primary" class="main-submit" v-if="location_of_uploaded_img==''">提交图片</p>
@@ -16,15 +17,13 @@
         </div>
       </form>
       <button @click="load_pic_button" class="upload_btn">点击上传图片</button>
-<!--      装饰模块-->
       </div><div class="d1">
       </div><div class="d3">
       </div><div class="d2">
     </div>
   </div>
-
 <!--  人物抠取模块-->
-  <div v-show="model=='person_photo'" class="person">
+  <div v-show="show_model==3" class="person">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <!--      图片位置-->
@@ -41,7 +40,7 @@
     </div>
   </div>
 <!--  证件照模块-->
-  <div v-show="model=='identity_photo'" class="identity_part">
+  <div v-show="show_model==2" class="identity_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
@@ -60,9 +59,9 @@
       </div>
       <div class="select-BGColor" v-cloak>
         <p>
-          red:<input type="range" max="255" min="0" v-model="red" class="picker-select"><br>
-          green:<input type="range" max="255" min="0" v-model="green" class="picker-select"><br>
-          blue:<input type="range" max="255" min="0" v-model="blue" class="picker-select"><br>
+          红色:<input type="range" max="255" min="0" v-model="red" class="picker-select"><br>
+          绿色:<input type="range" max="255" min="0" v-model="green" class="picker-select"><br>
+          蓝色:<input type="range" max="255" min="0" v-model="blue" class="picker-select"><br>
         </p>
       </div>
       <!--      图片位置-->
@@ -73,7 +72,7 @@
     <div class="zj3"></div>
   </div>
 <!--  换背景模块-->
-  <div v-show="model=='changed_background_photo'" class="changebg_part">
+  <div v-show="show_model==1" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-four">
@@ -84,26 +83,24 @@
       <input type="file" id="load_bg_img_btn" style="display: none" multiple="multiple"/>
       <input type="file" id="changeImg" style="display: none"/>
       <div id="width_height_tools">
-        <button @click="changeBlock('addWidth')" id="add_width">相框加宽</button>
-        <button @click="changeBlock('reduceWidth')" id="reduce_width">相框缩窄</button>
-        <button @click="changeBlock('addHeight')" id="add_height">相框加高</button>
-        <button @click="changeBlock('reduceHeight')" id="reduce_height">相框减矮</button>
         <!--        <div><span>请输入你要添加的文字</span></div>-->
-        <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="message" @change="print()" style="margin-top: 10px">
+        <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="inputNewThing" id="newInput"
+               @change="print()" style="margin-top: 10px">
+        <button @click="add_words_to_pic">插入文字</button>
+        <div>文字编辑框：</div><input type="text" placeholder="编辑文字" v-model="inputThing" id="changeInput">
         <p>文字调色</p>
         <p>
-          红:<input type="range" max="255" min="0" v-model="word_red" class="m-select"><br>
-          绿:<input type="range" max="255" min="0" v-model="word_green" class="m-select"><br>
-          蓝:<input type="range" max="255" min="0" v-model="word_blue" class="m-select"><br>
+          红:<input type="range" max="255" min="0" v-model="word.red" class="m-select"><br>
+          绿:<input type="range" max="255" min="0" v-model="word.green" class="m-select"><br>
+          蓝:<input type="range" max="255" min="0" v-model="word.blue" class="m-select"><br>
           文字旋转:<input type="range" max="360" min="-360" v-model="word_rotate" >
         </p>
-
       </div>
       <div id="func_btn_in_bg">
-        <button @click="onBtn('load_bg_img_btn')" type="primary"  id="change_background_btn">选择图片</button>
+        <button @click="onBtn('load_bg_img_btn')" type="primary"  id="change_background_btn">插入图片</button>
         <button @click="download_result_of_change_bg()" type="primary" id="download_btn_in_change_bg">下载图片</button>
       </div>
-      <div id="block-five" :style="{left:+boxLeft+'px',top:+boxTop+'px'}">
+      <div id="block-five" :style="{left:+boxLeft+'px',top:+boxTop+'px',border:'solid grey'}" @click="boxClick">
         <img
             @mousedown="imgCheck('imgOne')"
             @click="imgOver('imgOne')"
@@ -156,12 +153,6 @@
             :style="{transform:'scale('+params.zoomVal_5+')'}"
             @mousewheel="bagimg($event,'result_of_change_bg_person')" @mousewheel.prevent
         />
-        <span class="mes" id="m"
-              :style="{color: 'rgb('+word_red+','+word_green+','+word_blue+')',fontSize:fontSizes+'px',transform:'rotate('+word_rotate+'deg'+') scale('+params.zoomVal_7+')',cursor:'move'}"
-              @mousedown="imgCheck('m')"
-              @mousewheel="bagimg($event,'m')"
-              @mousewheel.prevent
-        >{{message}}</span>
       </div>
       <div id="bgGroup">
         <img :src=bg_option[0] @click="change_bg(0)" class="g1">
@@ -177,7 +168,7 @@
     <div class="bg4"></div>
   </div>
   <!--  换风格模块-->
-  <div v-show="model=='changed_style_photo'" class="changebg_part">
+  <div v-show="show_model==4" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
       <div class="block-one">
@@ -189,29 +180,26 @@
         <img id="special_process_result" value="custom" :src="url_normal_process_result">
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
-      <button type="primary"  class="change_style_btn">选择背景</button>
       <div id="style_tool_box">
-        <img :src=style_option[0] @click="change_style(0)" class="g1" alt="水彩">
-        <img :src=style_option[1] @click="change_style(1)" class="g2" alt="速写">
-        <img :src=style_option[2] @click="change_style(2)" class="g3" alt="霓虹">
-        <img :src=style_option[3] @click="change_style(3)" class="g4" alt="复古">
-        <img :src=style_option[4] @click="change_style(4)" class="g5" alt="黑白">
-        <img :src=style_option[4] @click="change_style(5)" class="g6" alt="浮雕">
-        <img :src=style_option[4] @click="change_style(6)" class="g7" alt="素描">
+        <img @click="change_style(0)" class="g1" src="../assets/shuicai.jpg" title="水彩">
+        <img @click="change_style(1)" class="g2" src="../assets/suxie.jpg" title="速写">
+        <img @click="change_style(2)" class="g3" src="../assets/nihong.png" title="霓虹">
+        <img @click="change_style(3)" class="g4" src="../assets/fugu.jpg" title="复古">
+        <img @click="change_style(4)" class="g5" src="../assets/heibai.jpg" title="黑白">
+        <img @click="change_style(5)" class="g6" src="../assets/fudiao.jpg" title="浮雕">
+        <img @click="change_style(6)" class="g7" src="../assets/sumiao.jpg" title="素描">
       </div>
     </div>
     <div class="st1"></div>
     <div class="st2"></div>
-<!--    <div class="bg3"></div>-->
-<!--    <div class="bg4"></div>-->
   </div>
 
   <!--中间4个控件-->
   <div class="middle">
-    <div ><button class="identity_button" @click="process_identification"></button></div>
-    <div><button class="person_process_button" @click="process_person"></button></div>
-    <div><button class="change_bg_button" @click="process_change_background"></button></div>
-    <div><button class="change_style_button" @click="process_change_style"></button></div>
+    <div><button class="identity_button" @click="processImg(2)"></button></div>
+    <div><button class="person_process_button" @click="processImg(3)"></button></div>
+    <div><button class="change_bg_button" @click="processImg(1)"></button></div>
+    <div><button class="change_style_button" @click="processImg(4)"></button></div>
   </div>
 
   <!--下面部分-->
@@ -258,7 +246,8 @@ export default {
 
   },data(){
     return{
-      model:"main",
+      img_file:null,
+      show_model:0,//0为主页，1为换背景，2为证件照，3为纯抠图，4为换风格
       location_of_uploaded_img:"",//本地上传图片的地址
       url_normal_process_result:"",//后端处理后图片地址
       filename_of_pic_in_back:"",//后台存储文件名
@@ -274,6 +263,7 @@ export default {
       isClickOnly:true,
       isDblclick:true,
       params:{
+        zoomVal:[],
         zoomVal_1:1,
         zoomVal_2:1,
         zoomVal_3:1,
@@ -288,36 +278,83 @@ export default {
         flag: false
       },
       //画板长款调整变量
-      boxLeft:0,
-      boxTop:0,
-      boxHeight:320,
-      boxWidth:420,
+      boxLeft:300,
+      boxTop:20,
+      boxHeight:360,
+      boxWidth:500,
       wheelChange:0,//滚轮变化值
       //证件照背景色
       red:255,
       green:255,
       blue:255,
       //字体颜色角度
-      word_red:0,
-      word_green:0,
-      word_blue:0,
+      word:{
+        red:0,
+        green:0,
+        blue:0,
+      },
       word_rotate:0,
       //图片删除
       imgChecked:"",
       deleteImgOne:false,
       deleteImgTwo:0,
-      message:"",
       fontSizes:20,
       rotates:0,
-      style_option:[]
+      style_option:[],
+      //画布移动
+      label:{
+        right:false,
+        left:false,
+        up:false,
+        down:false,
+        int:0,
+        right2:false,
+        left2:false,
+        up2:false,
+        down2:false,
+        move:false,
+      },
+      //span创建
+      inputNumber:0,
+      input:[],
+      inputChecked:"",
+      inputThing:"",
+      inputNewThing:"",
+      inputID:"",
+      //标签
+      BGPart:false,
     }
-  },
+  },created() {
+    request_of_jason.post('api/background/load').then(res=>{
+      this.bg_option = res.urls
+      console.log(res)
+    })
+    },
   mounted() {
     this.imgShow()
     this.getImg(this.location_of_uploaded_img);
     document.addEventListener("scroll", this.addScroll)
+    document.addEventListener("mousemove",this.get_mouse_loc)
   },
   watch:{
+    inputThing:{
+      handler(){
+        this.changeInput()
+      },
+      deep:true
+    },
+    word:{
+      handler() {
+        this.colorChange()
+      },
+      deep: true
+    },
+    word_rotate:{
+      handler(){
+      this.rotateChange()
+      },
+      deep:true
+    }
   },
   methods:{
     // 加载图片并预览
@@ -328,6 +365,48 @@ export default {
         const _base64 = reader.result
         this.location_of_uploaded_img = _base64 //将文件转读为url并通过_base64赋值给图片的src，实现图片预览
       }
+      this.img_file = e.target.files[0];
+    },
+    // 获取后端处理后生成的url
+    load_result_pic(filename){
+      request_of_jason.post('/api/image/download',{filename:filename}).then(res=> { //请求成功
+        if(res.status ==='wait'){
+          this.result_of_process = false
+        }else {
+          this.url_normal_process_result = res.url
+          this.result_of_process = true
+        }
+      })
+    },
+    // 根据后端传回的url下载文件到本地
+    download_Result() {
+      this.show_upload_result('照片下载中，请稍等~')
+      fetch(this.url_normal_process_result).then(res=>res.blob()).then(res=>{
+        const bqa = document.createElement("a");
+        bqa.setAttribute("download", this.filename_of_pic_in_back);
+        bqa.setAttribute("href", URL.createObjectURL(res));
+        bqa.click();
+      })
+    },
+    download_result_of_change_bg(){
+      this.show_upload_result('照片下载中，请稍等~')
+      html2canvas(document.getElementById("block-five"),{useCORS:true}).then(function (canvas) {
+        const image=canvas.toDataURL("image/png")
+        let $a=document.createElement("a")
+        $a.setAttribute("href",image)
+        $a.setAttribute("download","下载")
+        $a.click()
+      })
+    },
+    download_Result_of_identity_process(){
+      this.show_upload_result('照片下载中，请稍等~')
+      html2canvas(document.getElementById("block-two"),{useCORS:true}).then(function (canvas) {
+        const image=canvas.toDataURL("image/png")
+        let $a=document.createElement("a")
+        $a.setAttribute("href",image)
+        $a.setAttribute("download","下载")
+        $a.click()
+      })
     },
     // 将url中的二进制流转读为文件用于传给后端
     translateBase64ImgToFile(base64,filename,contentType){
@@ -346,67 +425,43 @@ export default {
         setTimeout(()=>{
           // 这里ajax 请求的代码片段和判断是否停止定时器
           this.load_result_pic(this.filename_of_pic_in_back);
-          if(this.result_of_process){
+          if(this.result_of_process||this.filename_of_pic_in_back==''){
             this.destroyTimer()
           }
           // 如需要停止定时器，只需加入以下：
         }, 0)
-      }, 5000)
-    },
-    // 获取后端处理后生成的url
-    load_result_pic(filename){
-      request_of_jason.post('/api/image/download',{filename:filename}).then(res=> { //请求成功
-        if(res.status ==='wait'){
-          this.result_of_process = false
-        }else {
-          // const reader = new FileReader()
-          // reader.readAsDataURL(e.target.files[0])
-          // reader.onload = () => {
-          //   const _base64 = reader.result
-          //   this.location_of_uploaded_img = _base64 //将文件转读为url并通过_base64赋值给图片的src，实现图片预览
-          // }
-          this.url_normal_process_result = res.url
-          this.result_of_process = true
-        }
-      })
-    },
-    // 根据后端传回的url下载文件到本地
-    download_Result() {
-      fetch(this.url_normal_process_result).then(res=>res.blob()).then(res=>{
-        const bqa = document.createElement("a");
-        bqa.setAttribute("download", this.filename_of_pic_in_back);
-        bqa.setAttribute("href", URL.createObjectURL(res));
-        bqa.click();
-      })
+      }, 7000)
     },
     // 删除计时器
     destroyTimer(){
       clearInterval(this.timer);
       this.timer=null;
     },
-    process_change_background(){
-      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.url_normal_process_result = ''
+    processImg(Model_to_Show){
+      this.BGPart=true
       this.destroyTimer();
-      this.model='changed_background_photo';
-      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-      let param = new FormData();
-      param.append('file',file,file.name)
-      // 上传图片到后端
-      request.post('/api/image/segmentation',param).then(res=>{
-        if(res.status=='success'){
-          this.filename_of_pic_in_back = res.message
-          this.show_upload_result("上传成功，正在处理中")
-          request_of_jason.post('api/background/load').then(res=>{
-            this.bg_option = res.urls
-            console.log(res)
+      if((this.show_model==0||this.show_model==4)&&(Model_to_Show==1||Model_to_Show==2||Model_to_Show==3)){
+          this.url_normal_process_result = '';
+          request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back});
+          let param = new FormData();
+          param.append('file',this.img_file)
+          //上传图片到后端
+          request.post('/api/image/segmentation',param).then(res=>{
+            if(res.status=='success'){
+              this.result_of_process = false
+              this.filename_of_pic_in_back = res.message;
+              this.show_upload_result("上传成功，正在处理中")
+              this.set_Timer()
+            }else {
+              this.show_upload_result("上传有误，请重试")
+              return
+            };
           })
-          this.set_Timer()
-        }else {
-          this.show_upload_result("上传有误，请重试")
-          return
-        };
-      })
+      }
+      if (Model_to_Show==4){
+        this.url_normal_process_result = '';
+      }
+      this.show_model=Model_to_Show;
     },
     change_bg(order_of_bg_img){
       this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
@@ -439,13 +494,17 @@ export default {
     },
     imgShow(){
       const filename=document.getElementById("load_bg_img_btn")
-      const imgTwo = document.getElementById("imgTwo");
       const imgOne = document.getElementById("imgOne");
+      const imgTwo = document.getElementById("imgTwo");
       const imgThree = document.getElementById("imgThree");
       const imgFour = document.getElementById("imgFour");
       filename.onchange=function () {
         if(filename.files[0]!=null){
-          imgOne.src = URL.createObjectURL(this.files[0]);
+          if(imgOne.src==''){
+            imgOne.src = URL.createObjectURL(this.files[0]);
+          }else {
+            imgFour.src = URL.createObjectURL(this.files[0]);
+          }
         }
         if(filename.files[1]!=null){
           imgTwo.src = URL.createObjectURL(this.files[1]);
@@ -487,16 +546,137 @@ export default {
         }
       }, 5000)
     },
-    download_result_of_change_bg(){
-      html2canvas(document.getElementById("block-five"),{useCORS:true}).then(function (canvas) {
-        console.log(canvas)
-        const image=canvas.toDataURL("image/png")
-        console.log(image)
-        let $a=document.createElement("a")
-        $a.setAttribute("href",image)
-        $a.setAttribute("download","下载")
-        $a.click()
-      })
+    //span生成
+    add_words_to_pic(){
+      let inputBoard=document.getElementById("block-five")
+      let that=this
+      this.params.zoomVal[this.inputNumber]=1
+      this.input[this.inputNumber]=document.createElement("span")
+      // this.input[this.inputNumber].type="text";
+      this.input[this.inputNumber].id=this.inputNumber;
+      this.input[this.inputNumber].innerText=this.inputNewThing
+      this.input[this.inputNumber].style.position="absolute"
+      this.input[this.inputNumber].style.zIndex=6
+      this.input[this.inputNumber].style.transform="scale("+this.params.zoomVal[this.inputNumber]+") rotate("+this.word_rotate+"deg"+")"
+      this.input[this.inputNumber].style.color="rgb("+this.word.red+","+this.word.green+","+this.word.blue+")"
+      this.inputID=this.inputNumber+""
+      this.input[this.inputNumber].onmousedown=function(event){
+        that.inputMousedown(window.event)
+        that.params.flag = true;
+        if (!event) {
+          event = window.event;
+          bar.onselectstart = function() {
+            return false;
+          }
+        }
+        let e = event;
+        that.params.currentX = e.clientX;
+        that.params.currentY = e.clientY;
+      }
+      this.input[this.inputNumber].onmousewheel=function(){
+        that.inputID=window.event.currentTarget.id
+        that.bagimg(window.event,that.inputID)
+      }
+      inputBoard.appendChild(this.input[this.inputNumber])
+      this.inputNumber+=1
+    },
+    inputMousedown(e){
+      // console.log(e.currentTarget.id)
+      this.inputID=e.currentTarget.id
+      document.removeEventListener("keydown",this.deleteImg)
+      this.deleteImgOne=true
+      this.deleteImgTwo+=1
+      this.imgChecked=""
+      document.addEventListener("keydown",this.deleteImg)
+      setTimeout(() => {
+        this.deleteImgTwo-=1
+      }, 5000)
+      this.startDrag_2(document.getElementById(e.currentTarget.id),document.getElementById(e.currentTarget.id))
+      const a=document.getElementById("changeInput")
+      const b=document.getElementById(this.inputID)
+      a.value=b.innerText
+    },
+    //监测input输入与颜色角度变化
+    colorChange(){
+      if(this.inputID!=""){
+        const a=document.getElementById(this.inputID)
+        const b=document.getElementById("changeInput")
+        a.style.color="rgb("+this.word.red+","+this.word.green+","+this.word.blue+")"
+      }
+    },
+    rotateChange(){
+      if(this.inputID!=""){
+        const a=document.getElementById(this.inputID)
+        const b=document.getElementById("changeInput")
+        a.style.transform="rotate("+this.word_rotate+"deg"+")"
+      }
+    },
+    changeInput(){
+      if(this.inputID!=""){
+        const a=document.getElementById(this.inputID)
+        a.innerText=this.inputThing
+      }
+    },
+    //鼠标坐标监测
+    get_mouse_loc(e){
+      let nowX=e.clientX
+      let nowY=e.clientY
+      if(this.BGPart==true)
+      if(nowX>this.boxLeft+220-5+this.boxWidth||nowX<this.boxLeft+220+5||nowY<this.boxTop+127-this.wheelChange+5||nowY>this.boxTop+127+this.boxHeight-this.wheelChange-2){
+        this.move()
+        this.deleteImgOne=false
+      }else {
+        this.stop()
+      }
+      //鼠标光标变化
+      if(this.label.move==false){
+        let that=this
+        if(e.clientX<that.boxLeft+220+that.boxWidth+7&&e.clientX>that.boxLeft+220+that.boxWidth-4){
+          that.label.right2=true
+        }else {
+          that.label.right2=false
+        }
+        if(e.clientY<that.boxTop+127+that.boxHeight-that.wheelChange+7&&e.clientY>that.boxTop+127+that.boxHeight-that.wheelChange-4){
+          that.label.down2=true
+        }else {
+          that.label.down2=false
+        }
+        if(e.clientX<that.boxLeft+220+4&&e.clientX>that.boxLeft+220-7){
+          that.label.left2=true
+        }else {
+          that.label.left2=false
+        }
+        if(e.clientY<that.boxTop+127-that.wheelChange+4&&e.clientY>that.boxTop+127-that.wheelChange-7){
+          that.label.up2=true
+        }else {
+          that.label.up2=false
+        }
+        const a=document.getElementById("block-five")
+        if(that.label.right2==true&&that.label.down2==true){
+          a.style.cursor="se-resize"
+          console.log("hh")
+        }else if (that.label.left2==true&&that.label.down2==true){
+          a.style.cursor="sw-resize"
+        }else if (that.label.right2==true&&that.label.up2==true){
+          a.style.cursor="ne-resize"
+        }else if (that.label.left2==true&&that.label.up2==true){
+          a.style.cursor="nw-resize"
+        }else if (that.label.right2==true){
+          a.style.cursor="e-resize"
+        }else if (that.label.down2==true){
+          a.style.cursor="s-resize"
+        }else if (that.label.left2==true){
+          a.style.cursor="w-resize"
+        }else if (that.label.up2==true){
+          a.style.cursor="n-resize"
+        }else {
+          a.style.cursor="default"
+        }
+      }
+    },
+    //画框点击选中
+    boxClick(){
+      this.startDrag(document.getElementById("block-five"), document.getElementById("block-five"))
     },
     // 滚轮事件
     addScroll(){
@@ -505,6 +685,14 @@ export default {
     },
     bagimg(e,String) {
       const h = document.getElementById(String)
+      if(parseInt(String)>=0){
+        this.params.zoomVal[h.id] += event.wheelDelta / 1200;
+        if (this.params.zoomVal[h.id] <= 0.2) {
+          this.params.zoomVal[h.id] = 0.2;
+        }
+        h.style.transform="scale("+this.params.zoomVal[h.id]+")"
+        this.wheel=false
+      }
       if(String=="imgOne"){
         this.params.zoomVal_1 += event.wheelDelta / 1200;
         if (this.params.zoomVal_1 <= 0.2) {
@@ -558,6 +746,22 @@ export default {
         this.wheel=true
       }, 300)
     },
+    //屏幕滚动条处理
+    stop(){
+      const mo = function (e) {
+        e.preventDefault();
+      };
+      document.body.style.overflow='hidden';
+      document.addEventListener("touchmove",mo,false);//禁止页面滑动
+    },
+    move(){
+      const mo = function (e) {
+        e.preventDefault();
+      };
+      document.body.style.overflow='';//出现滚动条
+      document.removeEventListener("touchmove",mo,false);
+    },
+    //控件移动
     getImgCss(e, key) {
       return e.currentStyle ? e.currentStyle[key] : document.defaultView.getComputedStyle(e, false)[key];
     },
@@ -580,7 +784,150 @@ export default {
         let e = event;
         that.params.currentX = e.clientX;
         that.params.currentY = e.clientY;
+        that.params.width=that.getImgCss(target,"width")
+        that.params.height=that.getImgCss(target,"height")
+        if(e.clientX<that.boxLeft+220+that.boxWidth+7&&e.clientX>that.boxLeft+220+that.boxWidth-4){
+          that.label.int+=1
+          that.label.right=true
+        }
+        if(e.clientY<that.boxTop+127+that.boxHeight-that.wheelChange+7&&e.clientY>that.boxTop+127+that.boxHeight-that.wheelChange-4){
+          that.label.int+=1
+          that.label.down=true
+        }
+        if(e.clientX<that.boxLeft+220+4&&e.clientX>that.boxLeft+220-7){
+          that.label.int+=1
+          that.label.left=true
+        }
+        if(e.clientY<that.boxTop+127-that.wheelChange+4&&e.clientY>that.boxTop+127-that.wheelChange-7){
+          that.label.int+=1
+          that.label.up=true
+        }
       };
+      document.onmouseup = function() {
+        that.params.flag = false;
+        if (that.getImgCss(target, "left") !== "auto") {
+          that.params.left = that.getImgCss(target, "left");
+
+        }
+        if (that.getImgCss(target, "top") !== "auto") {
+          that.params.top = that.getImgCss(target, "top");
+        }
+        that.params.width=that.getImgCss(target,"width")
+        that.params.height=that.getImgCss(target,"height")
+        that.label.right=false
+        that.label.down=false
+        that.label.left=false
+        that.label.up=false
+        that.label.int=0
+        that.label.move=false
+      };
+      document.onmousemove = function(event) {
+        let e = event ? event : window.event;
+        let nowX = e.clientX,
+            nowY = e.clientY;
+        if(that.label.int==0){
+          if(that.imgChecked=="identity_result_person"){
+            if(nowX>924||nowX<660||nowY<170-that.wheelChange||nowY>460-that.wheelChange-5){
+              that.params.flag=false
+            }
+          }else {
+            if(nowX>that.boxLeft+220-5+that.boxWidth||nowX<that.boxLeft+220+5||nowY<that.boxTop+127-that.wheelChange+5||nowY>that.boxTop+127+that.boxHeight-that.wheelChange-2){
+              if(target.id!="block-five"){
+                that.params.flag=false
+              }
+            }
+          }
+        }
+        if (that.params.flag) {
+          let disX = nowX - that.params.currentX,
+              disY = nowY - that.params.currentY;
+          that.label.move=true
+          if(target.id=="block-five"){
+            if(that.label.right==true){
+              that.boxWidth=parseInt(that.params.width) +disX
+              if(that.boxWidth<150){
+                that.boxWidth=150
+              }
+              if(that.boxWidth>550){
+                that.boxWidth=550
+              }
+              if(that.boxWidth+that.boxLeft>850){
+                that.boxWidth=850-that.boxLeft
+              }
+              target.style.width = that.boxWidth+ "px";
+            }
+            if(that.label.down==true){
+              that.boxHeight=parseInt(that.params.height) +disY
+              if(that.boxHeight>360){
+                that.boxHeight=360
+              }
+              if(that.boxHeight<150){
+                that.boxHeight=150
+              }
+              if(that.boxTop+that.boxHeight>380){
+                that.boxHeight=380-that.boxTop
+              }
+              target.style.height = that.boxHeight+ "px";
+            }
+            if(that.label.left==true){
+              that.boxLeft=parseInt(that.params.left) +disX
+              that.boxWidth=parseInt(that.params.width) -disX
+              if(that.boxWidth<150){
+                that.boxWidth=150
+                that.boxLeft=parseInt(that.params.left)+parseInt(that.params.width)-that. boxWidth
+              }
+              if(that.boxWidth>550){
+                that.boxWidth=550
+                that.boxLeft=parseInt(that.params.left)+parseInt(that.params.width)-that. boxWidth
+              }
+              if(that.boxLeft<300){
+                that.boxLeft=300
+                that.boxWidth=parseInt(that.params.left)+parseInt(that.params.width)-that. boxLeft
+              }
+              target.style.left = that.boxLeft + "px";
+              target.style.width = that.boxWidth+ "px";
+            }
+            if(that.label.up==true){
+              that.boxTop=parseInt(that.params.top) +disY
+              that.boxHeight=parseInt(that.params.height) -disY
+              if(that.boxTop<20){
+                that.boxTop=20
+                that.boxHeight=parseInt(that.params.top)+parseInt(that.params.height)-that.boxTop
+              }
+              if(that.boxHeight>360){
+                that.boxHeight=360
+                that.boxTop=parseInt(that.params.top)+parseInt(that.params.height)-that.boxHeight
+              }
+              if(that.boxHeight<150){
+                that.boxHeight=150
+                that.boxTop=parseInt(that.params.top)+parseInt(that.params.height)-that.boxHeight
+              }
+              target.style.top = that.boxTop+ "px";
+              target.style.height= that.boxHeight+ "px";
+              // if(that.boxHeight>430){
+              //     that.boxHeight=425
+              // }
+            }
+          }else {
+            target.style.left = parseInt(that.params.left) + disX + "px";
+            target.style.top = parseInt(that.params.top) + disY + "px";
+          }
+          if (event.preventDefault) {
+            event.preventDefault();
+          }
+          return false;
+        }
+      }
+    },
+    //input专用
+    startDrag_2(bar, target, callback) {
+      let that = this
+      if (that.getImgCss(target, "left") !== "auto") {
+        that.params.left = that.getImgCss(target, "left");
+      }
+      if (that.getImgCss(target, "top") !== "auto") {
+        that.params.top = that.getImgCss(target, "top");
+      }
       document.onmouseup = function() {
         that.params.flag = false;
         if (that.getImgCss(target, "left") !== "auto") {
@@ -593,18 +940,12 @@ export default {
       };
       document.onmousemove = function(event) {
         let e = event ? event : window.event;
+        let nowX = e.clientX,
+            nowY = e.clientY;
+        if(nowX>that.boxLeft+220-5+that.boxWidth||nowX<that.boxLeft+220+5||nowY<that.boxTop+127-that.wheelChange+5||nowY>that.boxTop+127+that.boxHeight-that.wheelChange-2){
+          that.params.flag=false
+        }
         if (that.params.flag) {
-          let nowX = e.clientX,
-              nowY = e.clientY;
-          if(that.imgChecked=="identity_result_person"){
-            if(nowX>924||nowX<660||nowY<170-that.wheelChange||nowY>460-that.wheelChange-5){
-              that.params.flag=false
-            }
-          }else {
-            if(nowX>that.boxLeft-5+that.boxWidth+580||nowX<that.boxLeft+5+580||nowY<that.boxTop-that.wheelChange+5+145||nowY>that.boxTop-that.wheelChange+that.boxHeight-5+145){
-              that.params.flag=false
-            }
-          }
           let disX = nowX - that.params.currentX,
               disY = nowY - that.params.currentY;
           target.style.left = parseInt(that.params.left) + disX + "px";
@@ -616,69 +957,44 @@ export default {
         }
       }
     },
-    changeBlock(String){
-      if(String=="addWidth"&&this.boxWidth<460){
-        this.boxWidth+=30
-      }
-      if(String=="reduceWidth"&&this.boxWidth>=100){
-        this.boxWidth-=30
-      }
-      if(String=="addHeight"&&this.boxHeight<360){
-        this.boxHeight+=20
-      }
-      if(String=="reduceHeight"&&this.boxHeight>=100){
-        this.boxHeight-=20
-      }
-      const bigImg=document.getElementById("block-five")
-      bigImg.style.height=this.boxHeight+"px"
-      bigImg.style.width=this.boxWidth+"px"
-    },
     deleteImg(e){
       if(e.keyCode==8&&this.deleteImgOne==true&&this.deleteImgTwo!=0){
-        const img=document.getElementById(this.imgChecked)
-        img.src=""
-        img.style.left=0+"px"
-        img.style.top=0+"px"
-        if(this.imgChecked=="imgOne"){
-          this.params.zoomVal_1=1
+        if(this.inputID!=""){
+          document.getElementById("block-five").removeChild(document.getElementById(this.inputID))
+          this.deleteImgOne=false
+          this.inputID=""
+        }else{
+          const img=document.getElementById(this.imgChecked)
+          img.src=""
+          img.style.left=0+"px"
+          img.style.top=0+"px"
+          if(this.imgChecked=="imgOne"){
+            this.params.zoomVal_1=1
+          }
+          if(this.imgChecked=="imgTwo"){
+            this.params.zoomVal_2=1
+          }
+          if(this.imgChecked=="imgThree"){
+            this.params.zoomVal_3=1
+          }
+          if(this.imgChecked=="imgFour"){
+            this.params.zoomVal_4=1
+          }
+          this.deleteImgOne=false
         }
-        if(this.imgChecked=="imgTwo"){
-          this.params.zoomVal_2=1
-        }
-        if(this.imgChecked=="imgThree"){
-          this.params.zoomVal_3=1
-        }
-        if(this.imgChecked=="imgFour"){
-          this.params.zoomVal_4=1
-        }
-        this.deleteImgOne=false
       }
     },
 
-
-
-
-
-
-
-
-    process_change_style(){
-      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.url_normal_process_result = ''
-      this.destroyTimer();
-      this.model='changed_style_photo';
-    },
     change_style(style_number){
       if(style_number>=3){
         this.getImg(this.location_of_uploaded_img,style_number)
         return
       }
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.destroyTimer();
+      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+      let param = new FormData();
+      param.append('file',file,file.name)
       if(style_number==0){
-        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-        let param = new FormData();
-        param.append('file',file,file.name)
         request.post('/api/style/watercolor',param).then(res=>{
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
@@ -688,12 +1004,8 @@ export default {
             return
           };
         })
-        this.set_Timer()
       }
       if(style_number==1){
-        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-        let param = new FormData();
-        param.append('file',file,file.name)
         request.post('/api/style/sketch',param).then(res=>{
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
@@ -703,12 +1015,8 @@ export default {
             return
           };
         })
-        this.set_Timer()
       }
       if(style_number==2){
-        let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-        let param = new FormData();
-        param.append('file',file,file.name)
         request.post('/api/style/neno',param).then(res=>{
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
@@ -718,8 +1026,8 @@ export default {
             return
           };
         })
-        this.set_Timer()
       }
+      this.set_Timer()
     },
     getImg(src,index) {
       let that = this;
@@ -750,9 +1058,9 @@ export default {
         cxt.drawImage(img, 0, 0, canvas.width, canvas.height);
         // 得到每一个像素的rgb值，得到的数组以4个为单位，%4=1的是r值, %4=2是g值, %4=3是b值，%4=像素模糊值(0-255）
         let imageData = cxt.getImageData(0, 0, canvas.width, canvas.height);
-        let imageData_length = imageData.data.length / 4;
+        //let imageData_length = imageData.data.length / 4;
         let d = imageData.data;
-        let originData = [];
+        //let originData = [];
         // 输出老照片
         if (index == 3) {
           that.drawOldImg(d);
@@ -778,7 +1086,7 @@ export default {
           let imgurl = canvas.toDataURL(); //获取图片的DataURL
           that.url_normal_process_result = imgurl;
         }
-      };
+      }
     },
     // 老照片
     drawOldImg(d) {
@@ -865,16 +1173,7 @@ export default {
     gaussBlurs(pixes, width, height, radius) {
       var gaussMatrix = [],
           gaussSum = 0,
-          x,
-          y,
-          r,
-          g,
-          b,
-          a,
-          i,
-          j,
-          k,
-          len;
+          x, y, r, g, b, a, i, j, k, len;
 
       radius = Math.floor(radius) || 3;
       let sigma = radius / 3;
@@ -942,72 +1241,24 @@ export default {
       }
       return pixes;
     },
-    process_person(){
-      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.url_normal_process_result = ''
-      this.destroyTimer();
-      this.model='person_photo';
-      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-      let param = new FormData();
-      param.append('file',file,file.name)
-      request.post('/api/image/segmentation',param).then(res=>{
-        if(res.status=='success'){
-          this.filename_of_pic_in_back = res.message
-          this.show_upload_result("上传成功，正在处理中")
-          this.set_Timer()
-        }else {
-          this.show_upload_result("上传有误，请重试")
-          return
-        };
-      })
-    },
-    process_identification(){
-      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.url_normal_process_result = ''
-      this.destroyTimer();
-      this.model='identity_photo';
-      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
-      let param = new FormData();
-      param.append('file',file,file.name)
-      request.post('/api/image/segmentation',param).then(res=>{
-        if(res.status=='success'){
-          this.filename_of_pic_in_back = res.message
-          this.show_upload_result("上传成功，正在处理中")
-          this.set_Timer()
-        }else {
-          this.show_upload_result("上传有误，请重试")
-          return
-        };
-      })
-    },
     drag_person(String){
       this.imgChecked=String
       this.startDrag(document.getElementById(String),document.getElementById(String))
     },
-    download_Result_of_identity_process(){
-      html2canvas(document.getElementById("block-two"),{useCORS:true}).then(function (canvas) {
-        const image=canvas.toDataURL("image/png")
-        let $a=document.createElement("a")
-        $a.setAttribute("href",image)
-        $a.setAttribute("download","下载")
-        $a.click()
-      })
-    },
     load_pic_button() {
       this.$refs.relFile.dispatchEvent(new MouseEvent('click'))
     },
-    fileChange() {
-      // 上传文件
-    },
     return_to_main_page(){
-      this.location_of_uploaded_img = ''
-      this.model='main';
-      this.destroyTimer();
-      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      this.filename_of_pic_in_back='';
-      this.result_of_process=false;
-      this.url_normal_process_result='';
-      this.process_page = 0
+      request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back});
+      location.reload();
+      // this.BGPart=false
+      // this.url_normal_process_result='';
+      // this.location_of_uploaded_img = ''
+      // this.show_model=0;
+      // this.src='';
+      // this.filename_of_pic_in_back='';
+      // this.result_of_process=false;
+      // this.process_page = 0
     },
     //上传结果提示
     showTips(objInfo){
@@ -1020,7 +1271,8 @@ export default {
       let infoTips = objInfo && objInfo.infoTips || "图片处理中";
 
       const alert = document.createElement("div");
-      alert.style.cssText = `position:absolute;left:45%;top:0%;z-index:99999;color:white;font-size:18px;border-radius:10px;box-shadow:inset 0px 0px 8px #fff;background-color: rgba(0,0,0,0.5);overflow:hidden;`;
+      alert.style.cssText = `position:absolute;left:45%;z-index:99999;color:white;font-size:18px;border-radius:10px;box-shadow:inset 0px 0px 8px #fff;background-color: rgba(0,0,0,0.5);overflow:hidden;`;
+      alert.style.top=this.wheelChange+"px"
       alert.style.width = w+"px";
       alert.style.minHeight = h+"px";
 
@@ -1065,7 +1317,7 @@ export default {
   height: 300px;
 }
 /*导航栏*/
-.daohang{
+.header{
   margin-top: -8px;
   width: 80%;
   height: 50px;
@@ -1101,6 +1353,16 @@ export default {
   font-size: 18px;
 }
 #about_us:hover{
+  color: #837F7F;
+  cursor: pointer;
+}
+#manual{
+  float: right;
+  padding-right: 25px;
+  padding-top: 6px;
+  font-size: 18px;
+}
+#manual:hover{
   color: #837F7F;
   cursor: pointer;
 }
@@ -1183,10 +1445,9 @@ export default {
 .upload_btn:hover{
   cursor:pointer;
   color: whitesmoke;
-}
-.upload_btn:hover{
   background-color: rgb(0, 119, 255);/*改了颜色*/
 }
+
 /*扣人模块*/
 .person{
   width: 80%;
@@ -1218,6 +1479,7 @@ export default {
   position: absolute;
   object-fit: contain;
   z-index: 60;
+  cursor: move;
 }
 .block-four{
   width: 15%;
@@ -1225,17 +1487,15 @@ export default {
   background-color: white;
   position: absolute;
   margin-top: 40px;
-  margin-left: 10%;
+  margin-left: 5%;
   text-align: center;
 }
 #block-five{
   position:absolute;
   overflow: hidden;
-  width: 350px;
-  height: 320px;
+  width: 500px;
+  height: 360px;
   background-color: white;
-  margin-top: 20px;
-  margin-left: 33%;
 }
 #imgOne{
   position: absolute;
@@ -1246,7 +1506,7 @@ export default {
   object-fit: contain;
   max-height: 100%;
   max-width: 100%;
-
+  cursor: move;
 }
 #imgTwo{
   position: absolute;
@@ -1257,6 +1517,7 @@ export default {
   object-fit: contain;
   max-height: 100%;
   max-width: 100%;
+  cursor: move;
 }
 #imgThree{
   position: absolute;
@@ -1268,6 +1529,7 @@ export default {
   object-fit: contain;
   max-height: 100%;
   max-width: 100%;
+  cursor: move;
 }
 #imgFour{
   position: absolute;
@@ -1279,17 +1541,121 @@ export default {
   object-fit: contain;
   max-height: 100%;
   max-width: 100%;
-}
-#m{
-  position: absolute;
-  width: auto;
-  z-index: 100;
+  cursor: move;
 }
 #bgGroup{
-  top: -160px;
-  position: relative;
+  margin-left: 45px;
+  margin-top: -140px;
+  width: 250px;
+  height: 200px;
+  position: absolute;
+  z-index: 999;
 }
-
+.g1{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 40px;
+  margin-top: 20px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g1:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g2{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 100px;
+  margin-top: 20px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g2:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g3{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 10px;
+  margin-top: 80px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g3:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g4{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 70px;
+  margin-top: 80px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g4:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g5{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 130px;
+  margin-top: 80px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g5:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g6{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 40px;
+  margin-top: 140px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g6:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
+.g7{
+  width: 40px;
+  height: 40px;
+  background-size: 100% 100%;
+  position: absolute;
+  margin-left: 100px;
+  margin-top: 140px;
+  border-width: 3px;
+  border: none;
+  box-shadow: 0px 0px 10px #888888;
+}
+.g7:hover{
+  box-shadow: 0px 0px 10px #5E5D5D;
+  cursor: pointer;
+}
 .identity_part{
   width: 80%;
   height: 490px;
@@ -1482,7 +1848,7 @@ export default {
   box-shadow: 0px 0px 10px #888888;
 }
 #func_btn_in_bg{
-  margin-left: 860px;
+  margin-left: 875px;
   margin-top: 325px;
   width: 200px;
   height: 50px;
@@ -1497,6 +1863,10 @@ export default {
   border: none;
   outline: none;
   float: right;
+}
+#download_btn_in_change_bg:hover{
+  color: whitesmoke;
+  cursor: pointer;
 }
 #change_background_btn{
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
@@ -1533,45 +1903,9 @@ export default {
   box-shadow: 0px 0px 10px #888888;
 }
 #width_height_tools{
-  left: 860px;
-  padding-top: 80px;
+  left: 890px;
+  padding-top: 60px;
   position: absolute;
-}
-#add_width{
-  border: none;
-  border-radius: 3px;
-  width: 100px;
-  font-size: 20px;
-  color: white;
-  background-color: #99ccff
-}
-#reduce_width{
-  border: none;
-  border-radius: 3px;
-  width: 100px;
-  margin-left: 5px;
-  color: white;
-  font-size: 20px;
-  background-color: #99ccff
-}
-#add_height{
-  border: none;
-  border-radius: 3px;
-  width: 100px;
-  color: white;
-  font-size: 20px;
-  background-color: #99ccff;
-  margin-top: 8px;
-}
-#reduce_height{
-  border: none;
-  border-radius: 3px;
-  width: 100px;
-  color: white;
-  margin-left: 5px;
-  font-size: 20px;
-  background-color: #99ccff;
-  margin-top: 8px;
 }
 .change_style_button{
   width: 150px;
@@ -1606,134 +1940,7 @@ export default {
   height: 300px;
 }
 #style_tool_box{
-  padding-left: 725px;
-  margin-top: -25px;
-}
-.g1{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 12%;
-  margin-top: 40px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g1:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g1:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g2{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 18%;
-  margin-top: 40px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g2:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g2:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g3{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 8%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g3:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g3:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g4{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 15%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g4:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g4:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g5{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 22%;
-  margin-top: 95px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g5:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g5:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g6{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 12%;
-  margin-top: 150px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g6:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g6:active{
-  box-shadow: 0px 0px 10px #888888;
-}
-.g7{
-  width: 40px;
-  height: 40px;
-  background-size: 100% 100%;
-  position: absolute;
-  margin-left: 18%;
-  margin-top: 150px;
-  border-width: 3px;
-  border: none;
-  box-shadow: 0px 0px 10px #888888;
-}
-.g7:hover{
-  box-shadow: 0px 0px 10px #5E5D5D;
-  cursor: pointer;
-}
-.g7:active{
-  box-shadow: 0px 0px 10px #888888;
+  padding-left: 825px;
 }
 /*下面部分*/
 .down{
@@ -1798,7 +2005,6 @@ export default {
   background-image: url('../assets/12.png');
   z-index:999;
 }
-
 
 /*最下面*/
 .bottom{
@@ -2005,24 +2211,6 @@ export default {
   -webkit-background-size: cover;
   -o-background-size: cover;
   background-position: center 0;
-}
-.block-four{
-  width: 15%;
-  height: 180px;
-  background-color: white;
-  position: absolute;
-  margin-top: 40px;
-  margin-left: 10%;
-  text-align: center;
-}
-
-.block-five{
-  width: 30%;
-  height: 360px;
-  background-color: white;
-  position: absolute;
-  margin-top: 20px;
-  margin-left: 35%;
 }
 
 #top_back{

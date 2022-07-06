@@ -2,7 +2,7 @@
 <!--  导航栏-->
   <div class="header">
     <div class="logo"></div>
-    <p id="page_title">在线抠图</p>
+    <p id="page_title">EasyGet</p>
     <p id="about_us" @click="this.$router.replace('/intro')">关于我们</p>
     <p id="manual" @click="this.$router.replace('/manual')">使用说明</p>
   </div>
@@ -86,7 +86,7 @@
         <!--        <div><span>请输入你要添加的文字</span></div>-->
         <input type="text" placeholder="请输入你要添加的文字" class="water-text" v-model="inputNewThing" id="newInput"
                @change="print()" style="margin-top: 10px">
-        <button @click="add_words_to_pic">插入文字</button>
+        <button @click="add_words_to_pic" style="background-color: lightskyblue;border: none;border-radius: 4px;color: white">插入文字</button>
         <div>文字编辑框：</div><input type="text" placeholder="编辑文字" v-model="inputThing" id="changeInput">
         <p>文字调色</p>
         <p>
@@ -1325,16 +1325,19 @@ export default {
   float: left;
   padding-left: 28px;
   margin-top: 12px;
-  font-size: 28px;
+  font-size: 35px;
+  font-style: italic;
   font-weight: bold;
-  color: black;
-  font-family: 'Microsoft YaHei'
+  text-shadow: 5px 5px 5px silver;
+  color: lightslategrey;
+  font-family: 'Copperplate';
 }
 #about_us{
   float: right;
   padding-right: 5px;
   padding-top: 6px;
   font-size: 18px;
+  color: lightslategrey;
 }
 #about_us:hover{
   color: #837F7F;
@@ -1345,6 +1348,7 @@ export default {
   padding-right: 25px;
   padding-top: 6px;
   font-size: 18px;
+  color: lightslategrey;
 }
 #manual:hover{
   color: #837F7F;

@@ -75,7 +75,7 @@
   <div v-show="show_model==1" class="changebg_part">
     <button class="backToHome" @click="return_to_main_page">返回首页</button>
     <div class="blockMain">
-      <div class="block-four">
+      <div class="block-four" @click="re_put_person">
         <div class="waiting_info" v-if="url_normal_process_result==''">图片加载中...</div>
         <center><div class="load_background" v-if="url_normal_process_result==''"></div></center>
         <img id="normal_process_result_in_bg" value="custom" :src="url_normal_process_result">
@@ -1287,6 +1287,9 @@ export default {
         infoTips:String
       }
       this.showTips(obj)
+    },
+    re_put_person(){
+      document.getElementById('result_of_change_bg_person').src = this.url_normal_process_result
     }
   }
 }
@@ -1324,7 +1327,7 @@ export default {
 #page_title{
   float: left;
   padding-left: 28px;
-  margin-top: 12px;
+  margin-top: 4px;
   font-size: 35px;
   font-style: italic;
   font-weight: bold;

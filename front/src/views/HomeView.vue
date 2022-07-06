@@ -180,6 +180,7 @@
         <img id="special_process_result" value="custom" :src="url_normal_process_result">
       </div>
       <button type="primary"  class="download_btn" @click="download_Result">一键下载</button>
+      <div id="style_info">选择一个自己喜欢的风格吧</div>
       <div id="style_tool_box">
         <img @click="change_style(0)" class="g1" src="../assets/shuicai.jpg" title="水彩">
         <img @click="change_style(1)" class="g2" src="../assets/suxie.jpg" title="速写">
@@ -242,9 +243,7 @@ import html2canvas from "html2canvas";
 
 export default {
   name: 'HomeView',
-  components: {
-
-  },data(){
+  data(){
     return{
       img_file:null,
       show_model:0,//0为主页，1为换背景，2为证件照，3为纯抠图，4为换风格
@@ -608,7 +607,7 @@ export default {
       if(this.inputID!=""){
         const a=document.getElementById(this.inputID)
         const b=document.getElementById("changeInput")
-        a.style.transform="rotate("+this.word_rotate+"deg"+")"
+        a.style.transform="rotate("+this.word_rotate+"deg"+") scale("+this.params.zoomVal[a.id]+")"
       }
     },
     changeInput(){
@@ -690,7 +689,7 @@ export default {
         if (this.params.zoomVal[h.id] <= 0.2) {
           this.params.zoomVal[h.id] = 0.2;
         }
-        h.style.transform="scale("+this.params.zoomVal[h.id]+")"
+        h.style.transform="scale("+this.params.zoomVal[h.id]+") rotate("+this.word_rotate+"deg"+")"
         this.wheel=false
       }
       if(String=="imgOne"){
@@ -827,7 +826,7 @@ export default {
             nowY = e.clientY;
         if(that.label.int==0){
           if(that.imgChecked=="identity_result_person"){
-            if(nowX>924||nowX<660||nowY<170-that.wheelChange||nowY>460-that.wheelChange-5){
+            if(nowX>925||nowX<715||nowY<170-that.wheelChange||nowY>460-that.wheelChange-5){
               that.params.flag=false
             }
           }else {
@@ -1251,14 +1250,6 @@ export default {
     return_to_main_page(){
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back});
       location.reload();
-      // this.BGPart=false
-      // this.url_normal_process_result='';
-      // this.location_of_uploaded_img = ''
-      // this.show_model=0;
-      // this.src='';
-      // this.filename_of_pic_in_back='';
-      // this.result_of_process=false;
-      // this.process_page = 0
     },
     //上传结果提示
     showTips(objInfo){
@@ -1308,13 +1299,6 @@ export default {
   height: 30px;
   background-size: 100%,100%;
   z-index: 999;
-}
-
-#change_bg_result_img_original{
-  max-height: 100%;
-  max-width: 100%;
-  object-fit: contain;
-  height: 300px;
 }
 /*导航栏*/
 .header{
@@ -1705,12 +1689,12 @@ export default {
 }
 
 #block-two{
-  width: 25%;
+  width:216px;
   height: 300px;
   background-color: white;
   position: absolute;
   margin-top: 40px;
-  margin-left: 40%;
+  margin-left: 45%;
   overflow: hidden;
 }
 
@@ -1925,6 +1909,14 @@ export default {
 }
 .change_style_button:active{
   box-shadow: 0px 0px 10px #888888;
+}
+#style_info{
+  font-weight: bold;
+  color: #bedeff;
+  font-size: 20px;
+  text-shadow: #5E5D5D 1px 1px 1px;
+  padding-left: 805px;
+  padding-top: 20px;
 }
 #special_process_result{
   max-height: 100%;

@@ -43,7 +43,7 @@ export default {
 }
 .ewm{
   z-index: 999;
-  background-image: url("../assets/13.png");
+  background-image: url("../assets/13.jpg");
   width: 70px;
   height: 70px;
   background-size: 100%,100%;
@@ -65,7 +65,7 @@ export default {
   min-width: 1000px;
   z-index: -1;
   zoom: 1;
-  background-image: url('../assets/39.png') ;
+  background-image: url('../assets/39.jpg') ;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center 0;

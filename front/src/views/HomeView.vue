@@ -184,7 +184,7 @@
       <div id="style_tool_box">
         <img @click="change_style(0)" class="g1" src="../assets/shuicai.jpg" title="水彩">
         <img @click="change_style(1)" class="g2" src="../assets/suxie.jpg" title="速写">
-        <img @click="change_style(2)" class="g3" src="../assets/nihong.png" title="霓虹">
+        <img @click="change_style(2)" class="g3" src="../assets/nihong.jpg" title="霓虹">
         <img @click="change_style(3)" class="g4" src="../assets/fugu.jpg" title="复古">
         <img @click="change_style(4)" class="g5" src="../assets/heibai.jpg" title="黑白">
         <img @click="change_style(5)" class="g6" src="../assets/fudiao.jpg" title="浮雕">
@@ -230,7 +230,7 @@
 <!--回到顶部按钮-->
   <a id="top_back" href="#top" target="_self">
     <div>
-      <img src="../assets/34.png">
+      <img src="../assets/34.jpg">
     </div>
   </a>
   <canvas id="myCanvas" style="display: none;"></canvas>
@@ -990,7 +990,7 @@ export default {
         return
       }
       request_of_jason.post('api/image/delete',{filename:this.filename_of_pic_in_back})
-      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.png', 'image/png')
+      let file = this.translateBase64ImgToFile(this.location_of_uploaded_img, 'test.jpg', 'image/png')
       let param = new FormData();
       param.append('file',file,file.name)
       if(style_number==0){
@@ -1361,7 +1361,7 @@ export default {
 .up{
   width: 80%;
   height: 490px;
-  background-image: url('../assets/1.png');
+  background-image: url('../assets/1.jpg');
   background-repeat: no-repeat;
   background-size: 100% 100%;
   position: relative;
@@ -1371,7 +1371,7 @@ export default {
 .in1{
   width: 350px;
   height: 200px;
-  background-image: url('../assets/2.png');
+  background-image: url('../assets/2.jpg');
   background-size: 100% 100%;
   margin-left:55% ;
   position: absolute;
@@ -1444,7 +1444,7 @@ export default {
   width: 80%;
   height: 490px;
   position: relative;
-  background-image: url('../assets/14.png');
+  background-image: url('../assets/14.jpg');
   background-size: 100% 100%;
   margin-left: 10%;
   z-index: 999;
@@ -1454,7 +1454,7 @@ export default {
   width: 80%;
   height: 490px;
   position: relative;
-  background-image: url('../assets/14.png');
+  background-image: url('../assets/14.jpg');
   background-size: 100% 100%;
   margin-left: 10%;
 }
@@ -1651,7 +1651,7 @@ export default {
   width: 80%;
   height: 490px;
   position: relative;
-  background-image: url('../assets/14.png');
+  background-image: url('../assets/14.jpg');
   background-size: 100% 100%;
   margin-left: 10%;
 }
@@ -1793,7 +1793,7 @@ export default {
 .identity_button{
   width: 150px;
   height: 150px;
-  background-image: url('../assets/5.png');
+  background-image: url('../assets/5.jpg');
   background-size: 100% 100%;
   position: absolute;
   margin-left: 33%;
@@ -1822,7 +1822,7 @@ export default {
 .person_process_button{
   width: 150px;
   height: 150px;
-  background-image: url('../assets/3.png');
+  background-image: url('../assets/3.jpg');
   background-size: 100% 100%;
   position: absolute;
   margin-left: 50%;
@@ -1877,7 +1877,7 @@ export default {
 .change_bg_button{
   width: 150px;
   height: 150px;
-  background-image: url('../assets/4.png');
+  background-image: url('../assets/4.jpg');
   background-size: 100% 100%;
   position: absolute;
   margin-left: 15%;
@@ -1901,7 +1901,7 @@ export default {
 .change_style_button{
   width: 150px;
   height: 150px;
-  background-image: url('../assets/9.png');
+  background-image: url('../assets/9.jpg');
   background-size: 100% 100%;
   position: absolute;
   margin-left: 68%;
@@ -1979,7 +1979,7 @@ export default {
   margin-left: 6%;
   margin-top: 830px;
   z-index:999;
-  background-image: url('../assets/10.png');
+  background-image: url('../assets/10.jpg');
 }
 
 .d3{
@@ -1989,7 +1989,7 @@ export default {
   position: absolute;
   margin-top: 830px;
   margin-left: calc(46% - 110px);
-  background-image: url('../assets/11.png');
+  background-image: url('../assets/11.jpg');
   background-size: 100% 100%;
   z-index:999;
 }
@@ -2001,7 +2001,7 @@ export default {
   position: absolute;
   margin-left: 65%;
   margin-top: 810px;
-  background-image: url('../assets/12.png');
+  background-image: url('../assets/12.jpg');
   z-index:999;
 }
 
@@ -2066,7 +2066,7 @@ export default {
 .p8{
   width: 80px;
   height: 80px;
-  background-image: url('../assets/13.png');
+  background-image: url('../assets/13.jpg');
   background-size: 100% 100%;
   position: absolute;
   margin-left: 60%;
@@ -2082,7 +2082,7 @@ export default {
   left: 6%;
   top: 750px;
   z-index:999;
-  background-image: url('../assets/15.png');
+  background-image: url('../assets/15.jpg');
 }
 .pe2{
   width: 150px;
@@ -2092,7 +2092,7 @@ export default {
   left: 45%;
   top: 730px;
   z-index:999;
-  background-image: url('../assets/17.png');
+  background-image: url('../assets/17.jpg');
 }
 .pe3{
   width: 150px;
@@ -2102,7 +2102,7 @@ export default {
   left: 65%;
   top: 730px;
   z-index:999;
-  background-image: url('../assets/16.png');
+  background-image: url('../assets/16.jpg');
 }
 .bg1{
   width: 150px;
@@ -2112,7 +2112,7 @@ export default {
   margin-left: 15%;
   margin-top: 730px;
   z-index:999;
-  background-image: url('../assets/18.png');
+  background-image: url('../assets/18.jpg');
 }
 .bg2{
   width: 150px;
@@ -2122,7 +2122,7 @@ export default {
   margin-left: 35%;
   margin-top: 730px;
   z-index:999;
-  background-image: url('../assets/19.png');
+  background-image: url('../assets/19.jpg');
 }
 .bg3{
   width: 150px;
@@ -2132,7 +2132,7 @@ export default {
   margin-left: 50%;
   margin-top: 730px;
   z-index:999;
-  background-image: url('../assets/20.png');
+  background-image: url('../assets/20.jpg');
 }
 .bg4{
   width: 150px;
@@ -2142,7 +2142,7 @@ export default {
   margin-left: 70%;
   margin-top: 730px;
   z-index:999;
-  background-image: url('../assets/21.png');
+  background-image: url('../assets/21.jpg');
 }
 .st1{
   width: 300px;
@@ -2172,7 +2172,7 @@ export default {
   margin-left: 20%;
   margin-top: 750px;
   z-index:999;
-  background-image: url('../assets/25.png');
+  background-image: url('../assets/25.jpg');
 }
 .zj2{
   width: 150px;
@@ -2192,7 +2192,7 @@ export default {
   margin-left: 65%;
   margin-top: 750px;
   z-index:999;
-  background-image: url('../assets/27.png');
+  background-image: url('../assets/27.jpg');
 }
 .background {
   position: fixed;
@@ -2204,7 +2204,7 @@ export default {
   z-index: -10;
   zoom: 1;
   background-color: #fff;
-  background-image: url(../assets/28.png) ;
+  background-image: url(../assets/28.jpg) ;
   background-repeat: no-repeat;
   background-size: cover;
   -webkit-background-size: cover;

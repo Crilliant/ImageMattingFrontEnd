@@ -105,7 +105,7 @@
             @mousedown="imgCheck('imgOne')"
             @click="imgOver('imgOne')"
             @dblclick="onBtn('changeImg')"
-            :src="url_of_bg_img_from_back"
+            :src="src"
             id="imgOne"
             :style="{transform:'scale('+params.zoomVal_1+')'}"
             @mousewheel="bagimg($event,'imgOne')" @mousewheel.prevent
@@ -463,11 +463,15 @@ export default {
       this.show_model=Model_to_Show;
     },
     change_bg(order_of_bg_img){
-      this.url_of_bg_img_from_back = this.bg_option[order_of_bg_img]
+      const imgFour = document.getElementById("imgFour");
+      imgFour.src = this.bg_option[order_of_bg_img]
     },
     imgOver(String){
       if(this.isClick){
+        console.log("this.isClick"+this.isClick);
+        console.log("this.isClickOnly"+ this.isClickOnly);
         this.isDblclick=true
+        this.isClickOnly = true;
         setTimeout(() => {
           if(this.isClickOnly){
             this.zIndex("imgOne",String)
@@ -475,7 +479,7 @@ export default {
             this.zIndex("imgThree",String)
             this.zIndex("imgFour",String)
             const imgChecks = document.getElementById(String);
-            imgChecks.style.zIndex=5
+            imgChecks.style.zIndex = 5
           }
         }, 200)
         setTimeout(() => {
@@ -499,11 +503,7 @@ export default {
       const imgFour = document.getElementById("imgFour");
       filename.onchange=function () {
         if(filename.files[0]!=null){
-          if(imgOne.src==''){
-            imgOne.src = URL.createObjectURL(this.files[0]);
-          }else {
-            imgFour.src = URL.createObjectURL(this.files[0]);
-          }
+          imgOne.src = URL.createObjectURL(this.files[0]);
         }
         if(filename.files[1]!=null){
           imgTwo.src = URL.createObjectURL(this.files[1]);
@@ -903,9 +903,6 @@ export default {
               }
               target.style.top = that.boxTop+ "px";
               target.style.height= that.boxHeight+ "px";
-              // if(that.boxHeight>430){
-              //     that.boxHeight=425
-              // }
             }
           }else {
             target.style.left = parseInt(that.params.left) + disX + "px";
@@ -983,7 +980,6 @@ export default {
         }
       }
     },
-
     change_style(style_number){
       if(style_number>=3){
         this.getImg(this.location_of_uploaded_img,style_number)
@@ -998,6 +994,7 @@ export default {
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
+            this.set_Timer()
           }else {
             this.show_upload_result("上传有误，请重试")
             return
@@ -1009,6 +1006,7 @@ export default {
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
+            this.set_Timer()
           }else {
             this.show_upload_result("上传有误，请重试")
             return
@@ -1020,13 +1018,13 @@ export default {
           if(res.status=='success'){
             this.show_upload_result("上传成功，正在处理中")
             this.filename_of_pic_in_back = res.message
+            this.set_Timer()
           }else {
             this.show_upload_result("上传有误，请重试")
             return
           };
         })
       }
-      this.set_Timer()
     },
     getImg(src,index) {
       let that = this;

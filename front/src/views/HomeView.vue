@@ -387,6 +387,7 @@ export default {
         bqa.click();
       })
     },
+    //根据画布工具下载拼图区域文件
     download_result_of_change_bg(){
       this.show_upload_result('照片下载中，请稍等~')
       html2canvas(document.getElementById("block-five"),{useCORS:true}).then(function (canvas) {
@@ -397,6 +398,7 @@ export default {
         $a.click()
       })
     },
+    //证件照区域画布内容下载
     download_Result_of_identity_process(){
       this.show_upload_result('照片下载中，请稍等~')
       html2canvas(document.getElementById("block-two"),{useCORS:true}).then(function (canvas) {
@@ -436,6 +438,7 @@ export default {
       clearInterval(this.timer);
       this.timer=null;
     },
+    //切换图片处理页面
     processImg(Model_to_Show){
       this.BGPart=true
       this.destroyTimer();
@@ -462,14 +465,14 @@ export default {
       }
       this.show_model=Model_to_Show;
     },
+    //更换背景
     change_bg(order_of_bg_img){
       const imgFour = document.getElementById("imgFour");
       imgFour.src = this.bg_option[order_of_bg_img]
     },
+    //单机事件将图片置于最上层
     imgOver(String){
       if(this.isClick){
-        console.log("this.isClick"+this.isClick);
-        console.log("this.isClickOnly"+ this.isClickOnly);
         this.isDblclick=true
         this.isClickOnly = true;
         setTimeout(() => {
@@ -487,6 +490,7 @@ export default {
         }, 300)
       }
     },
+    //双击事件与图片上传处理
     onBtn(String){
       if(String!="changeImg"){
         document.getElementById(String).click()
@@ -495,6 +499,7 @@ export default {
         this.isClickOnly=false
       }
     },
+    //双击事件图片置于顶层
     imgShow(){
       const filename=document.getElementById("load_bg_img_btn")
       const imgOne = document.getElementById("imgOne");
@@ -516,6 +521,7 @@ export default {
         }
       }
     },
+    //置于顶层zIndex处理
     zIndex(String,next){
       const imgChecks = document.getElementById(String);
       const imgCheckNext=document.getElementById(next);
@@ -523,6 +529,7 @@ export default {
         imgChecks.style.zIndex-=1
       }
     },
+    //鼠标按下后事件预处理
     imgCheck(String){
       this.startDrag(document.getElementById(String), document.getElementById(String))
       const filename2=document.getElementById("changeImg")
@@ -653,7 +660,6 @@ export default {
         const a=document.getElementById("block-five")
         if(that.label.right2==true&&that.label.down2==true){
           a.style.cursor="se-resize"
-          console.log("hh")
         }else if (that.label.left2==true&&that.label.down2==true){
           a.style.cursor="sw-resize"
         }else if (that.label.right2==true&&that.label.up2==true){
